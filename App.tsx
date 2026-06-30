@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import MapView, { Marker, Polyline, Region } from "react-native-maps";
 
 type VehicleType = "Auto" | "Fahrrad" | "Motorrad" | "Scooter";
 
@@ -47,6 +48,21 @@ const VEHICLE_TYPES: VehicleType[] = ["Auto", "Fahrrad", "Motorrad", "Scooter"];
 const DEFAULT_VEHICLES: Vehicle[] = [
   { id: "vehicle-auto", name: "VW Golf", type: "Auto" },
   { id: "vehicle-bike", name: "Tims Fahrrad", type: "Fahrrad" }
+];
+
+const FALLBACK_COORDINATE = {
+  latitude: 47.3769,
+  longitude: 8.5417
+};
+
+const MAP_DARK_STYLE = [
+  { elementType: "geometry", stylers: [{ color: "#151523" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#b7b5c8" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#0d0d19" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#25253a" }] },
+  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#11111d" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#073f59" }] },
+  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#143b32" }] }
 ];
 
 function formatTime(value: string) {
@@ -152,6 +168,12 @@ export default function App() {
 
   const remainingMs = timerEnd ? new Date(timerEnd).getTime() - now : 0;
   const timerIsActive = Boolean(timerEnd && remainingMs > 0);
+  const mapRegion: Region = {
+    latitude: parkingSpot?.latitude ?? FALLBACK_COORDINATE.latitude,
+    longitude: parkingSpot?.longitude ?? FALLBACK_COORDINATE.longitude,
+    latitudeDelta: parkingSpot ? 0.006 : 0.02,
+    longitudeDelta: parkingSpot ? 0.006 : 0.02
+  };
 
   async function saveParkingSpot() {
     if (!selectedVehicle) {
@@ -180,7 +202,7 @@ export default function App() {
         vehicleId: selectedVehicle.id,
         latitude,
         longitude,
-        address: address || "Bahnhofstrasse 12, Zürich",
+        address: address || "Gespeicherter Parkplatz",
         savedAt: new Date().toISOString()
       });
 
@@ -267,15 +289,7 @@ export default function App() {
 
         {screen === "dashboard" && (
           <View style={styles.mapScreen}>
-            <MapPreview hasParkingSpot={Boolean(parkingSpot)} hasPhoto={Boolean(parkingSpot?.photoUri)} />
-
-            <View style={styles.mapActions}>
-              <RoundAction label="⌖" />
-              <TouchableOpacity style={styles.roundAction} onPress={() => pickPhoto("camera")}>
-                <Text style={styles.roundActionText}>▣</Text>
-              </TouchableOpacity>
-              <RoundAction label="A" isActive />
-            </View>
+            <CarPinMap parkingSpot={parkingSpot} region={mapRegion} />
 
             <View style={styles.bottomSheet}>
               <View style={styles.handle} />
@@ -283,8 +297,8 @@ export default function App() {
               {parkingSpot ? (
                 <>
                   <View style={styles.savedCard}>
-                    <Text style={styles.savedEyebrow}>✓ Parkplatz gespeichert</Text>
-                    <Text style={styles.savedTitle}>{parkingSpot.address || "Bahnhofstrasse 12"}</Text>
+                    <Text style={styles.savedEyebrow}>Parkplatz gespeichert</Text>
+                    <Text style={styles.savedTitle}>{parkingSpot.address || "Gespeicherter Parkplatz"}</Text>
                     <Text style={styles.savedMeta}>
                       {selectedVehicle?.name ?? "Fahrzeug"} · Heute, {formatTime(parkingSpot.savedAt).split(",").pop()?.trim()}
                     </Text>
@@ -299,11 +313,14 @@ export default function App() {
                   {parkingSpot.photoUri && <Image source={{ uri: parkingSpot.photoUri }} style={styles.parkingPhoto} />}
 
                   <View style={styles.actionRow}>
+                    <TouchableOpacity style={styles.darkButton} onPress={() => pickPhoto("camera")}>
+                      <Text style={styles.darkButtonText}>Foto aufnehmen</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.darkButton} onPress={() => pickPhoto("library")}>
-                      <Text style={styles.darkButtonText}>▣ Foto anzeigen</Text>
+                      <Text style={styles.darkButtonText}>Galerie</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.primaryButtonSmall} onPress={openRoute}>
-                      <Text style={styles.primaryButtonText}>△ Zurück zum Auto</Text>
+                      <Text style={styles.primaryButtonText}>Zurück zum Auto</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -315,15 +332,15 @@ export default function App() {
                 <>
                   <View style={styles.lastSavedCard}>
                     <View style={styles.pinBadge}>
-                      <Text style={styles.pinBadgeText}>⌖</Text>
+                      <Text style={styles.pinBadgeText}>P</Text>
                     </View>
                     <View>
-                      <Text style={styles.lastSavedLabel}>Zuletzt gespeichert</Text>
-                      <Text style={styles.lastSavedText}>Noch kein Parkplatz aktiv</Text>
+                      <Text style={styles.lastSavedLabel}>Aktives Fahrzeug</Text>
+                      <Text style={styles.lastSavedText}>{selectedVehicle?.name ?? "Noch kein Fahrzeug"}</Text>
                     </View>
                   </View>
 
-                  <View style={styles.vehicleStrip}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.vehicleStrip}>
                     {vehicles.map((vehicle) => (
                       <TouchableOpacity
                         key={vehicle.id}
@@ -335,10 +352,10 @@ export default function App() {
                         </Text>
                       </TouchableOpacity>
                     ))}
-                  </View>
+                  </ScrollView>
 
                   <TouchableOpacity style={styles.primaryButton} onPress={saveParkingSpot} disabled={isSavingSpot}>
-                    <Text style={styles.primaryButtonText}>{isSavingSpot ? "Speichere..." : "⌖ Parkplatz speichern"}</Text>
+                    <Text style={styles.primaryButtonText}>{isSavingSpot ? "Speichere..." : "Parkplatz speichern"}</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -357,7 +374,7 @@ export default function App() {
 
             <View style={styles.timerInfo}>
               <Text style={styles.timerInfoText}>
-                ◷ {timerEnd ? `Gestartet ${formatTime(new Date().toISOString())} · Endet ${formatTime(timerEnd)}` : "Kein aktiver Timer"}
+                {timerEnd ? `Endet ${formatTime(timerEnd)}` : "Kein aktiver Timer"}
               </Text>
             </View>
 
@@ -374,19 +391,8 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.customTimer}>
-              <Text style={styles.customTimerText}>Benutzerdefiniert</Text>
-              <TouchableOpacity style={styles.stepperButton}>
-                <Text style={styles.stepperText}>−</Text>
-              </TouchableOpacity>
-              <Text style={styles.customTimerValue}>1 h</Text>
-              <TouchableOpacity style={styles.stepperButtonActive}>
-                <Text style={styles.stepperTextActive}>+</Text>
-              </TouchableOpacity>
-            </View>
-
             <TouchableOpacity style={styles.primaryButton} onPress={() => startTimer(60)}>
-              <Text style={styles.primaryButtonText}>♢ Erinnerung aktivieren</Text>
+              <Text style={styles.primaryButtonText}>1 h Timer starten</Text>
             </TouchableOpacity>
           </ScrollView>
         )}
@@ -450,9 +456,6 @@ function Header({ title }: HeaderProps) {
         <Image source={require("./carpin.png")} style={styles.logo} resizeMode="contain" />
         <Text style={styles.headerTitle}>{title}</Text>
       </View>
-      <View style={styles.menuButton}>
-        <Text style={styles.menuText}>☰</Text>
-      </View>
     </View>
   );
 }
@@ -471,46 +474,55 @@ function TabButton({ label, isActive, onPress }: TabButtonProps) {
   );
 }
 
-type MapPreviewProps = {
-  hasParkingSpot: boolean;
-  hasPhoto: boolean;
+type CarPinMapProps = {
+  parkingSpot: ParkingSpot | null;
+  region: Region;
 };
 
-function MapPreview({ hasParkingSpot, hasPhoto }: MapPreviewProps) {
+function CarPinMap({ parkingSpot, region }: CarPinMapProps) {
+  const userCoordinate = {
+    latitude: region.latitude - 0.0016,
+    longitude: region.longitude - 0.0014
+  };
+  const parkingCoordinate = parkingSpot
+    ? { latitude: parkingSpot.latitude, longitude: parkingSpot.longitude }
+    : null;
+
   return (
-    <View style={styles.mapCanvas}>
-      <View style={[styles.mapBlock, styles.blockOne]} />
-      <View style={[styles.mapBlock, styles.blockTwo]} />
-      <View style={[styles.mapBlock, styles.blockThree]} />
-      <View style={[styles.mapBlock, styles.blockFour]} />
-      <View style={[styles.mapBlock, styles.blockFive]} />
-      <View style={[styles.mapBlock, styles.blockSix]} />
-      <View style={[styles.mapBlock, styles.blockSeven]} />
-      <View style={[styles.mapBlock, styles.blockEight]} />
-      <View style={[styles.road, styles.roadHorizontalTop]} />
-      <View style={[styles.road, styles.roadHorizontalMid]} />
-      <View style={[styles.road, styles.roadHorizontalLow]} />
-      <View style={[styles.road, styles.roadVerticalLeft]} />
-      <View style={[styles.road, styles.roadVerticalMid]} />
-      <View style={[styles.road, styles.roadVerticalRight]} />
-      <View style={[styles.greenZone, styles.greenOne]} />
-      <View style={[styles.greenZone, styles.greenTwo]} />
-      <View style={styles.userDot}>
-        <View style={styles.userDotCore} />
+    <View style={styles.mapCard}>
+      <MapView
+        style={styles.realMap}
+        initialRegion={region}
+        region={region}
+        customMapStyle={MAP_DARK_STYLE}
+        showsCompass={false}
+        showsMyLocationButton={false}
+        showsPointsOfInterest={false}
+      >
+        <Marker coordinate={userCoordinate} title="Dein Standort">
+          <View style={styles.userMarker}>
+            <View style={styles.userMarkerInner} />
+          </View>
+        </Marker>
+
+        {parkingCoordinate && (
+          <>
+            <Polyline coordinates={[userCoordinate, parkingCoordinate]} strokeColor="#20c8f4" strokeWidth={5} />
+            <Marker coordinate={parkingCoordinate} title="Parkplatz">
+              <View style={styles.parkingMarker}>
+                <Text style={styles.parkingMarkerText}>P</Text>
+              </View>
+            </Marker>
+          </>
+        )}
+      </MapView>
+
+      <View style={styles.mapOverlayLabel}>
+        <Text style={styles.mapOverlayEyebrow}>Kartenansicht</Text>
+        <Text style={styles.mapOverlayText}>
+          {parkingSpot ? parkingSpot.address || "Parkplatz gespeichert" : "Zürich"}
+        </Text>
       </View>
-      {hasParkingSpot && (
-        <>
-          <View style={styles.routeLineOne} />
-          <View style={styles.routeLineTwo} />
-          <View style={styles.routeLineThree} />
-          <View style={styles.mapPin}>
-            <Text style={styles.mapPinText}>●</Text>
-          </View>
-          <View style={styles.savedMapBadge}>
-            <Text style={styles.savedMapBadgeText}>{hasPhoto ? "Foto + Parkplatz" : "Gespeichert"}</Text>
-          </View>
-        </>
-      )}
     </View>
   );
 }
@@ -523,22 +535,8 @@ type MetricProps = {
 function Metric({ label, value }: MetricProps) {
   return (
     <View style={styles.metric}>
-      <Text style={styles.metricIcon}>⌖</Text>
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={styles.metricValue}>{value}</Text>
-    </View>
-  );
-}
-
-type RoundActionProps = {
-  label: string;
-  isActive?: boolean;
-};
-
-function RoundAction({ label, isActive }: RoundActionProps) {
-  return (
-    <View style={[styles.roundAction, isActive && styles.roundActionActive]}>
-      <Text style={[styles.roundActionText, isActive && styles.roundActionTextActive]}>{label}</Text>
     </View>
   );
 }
@@ -575,21 +573,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "900"
   },
-  menuButton: {
-    alignItems: "center",
-    backgroundColor: "#171725",
-    borderColor: "#242439",
-    borderRadius: 18,
-    borderWidth: 1,
-    height: 36,
-    justifyContent: "center",
-    width: 36
-  },
-  menuText: {
-    color: "#f7f8ff",
-    fontSize: 18,
-    fontWeight: "900"
-  },
   tabs: {
     backgroundColor: "#151523",
     borderColor: "#242439",
@@ -621,226 +604,68 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: -16
   },
-  mapCanvas: {
+  mapCard: {
     flex: 1,
     minHeight: 520,
     overflow: "hidden",
     position: "relative"
   },
-  mapBlock: {
-    backgroundColor: "#1c1c30",
-    borderColor: "#11111d",
-    borderRadius: 4,
-    borderWidth: 4,
-    position: "absolute"
+  realMap: {
+    ...StyleSheet.absoluteFillObject
   },
-  blockOne: {
-    height: 76,
-    left: 20,
-    top: 54,
-    width: 104
+  mapOverlayLabel: {
+    backgroundColor: "rgba(17, 17, 29, 0.92)",
+    borderColor: "#242439",
+    borderRadius: 18,
+    borderWidth: 1,
+    left: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    position: "absolute",
+    top: 14
   },
-  blockTwo: {
-    height: 92,
-    left: 132,
-    top: 54,
-    width: 106
+  mapOverlayEyebrow: {
+    color: "#20c8f4",
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase"
   },
-  blockThree: {
-    height: 74,
-    right: 26,
-    top: 60,
-    width: 92
+  mapOverlayText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "900",
+    marginTop: 3
   },
-  blockFour: {
-    height: 98,
-    left: 24,
-    top: 178,
-    width: 128
-  },
-  blockFive: {
-    height: 116,
-    left: 170,
-    top: 184,
-    width: 102
-  },
-  blockSix: {
-    height: 92,
-    right: 26,
-    top: 186,
-    width: 100
-  },
-  blockSeven: {
-    height: 118,
-    left: 72,
-    top: 330,
-    width: 146
-  },
-  blockEight: {
-    height: 124,
-    right: 30,
-    top: 330,
-    width: 120
-  },
-  road: {
-    backgroundColor: "#11111e",
-    position: "absolute"
-  },
-  roadHorizontalTop: {
-    height: 10,
-    left: 0,
-    right: 0,
-    top: 146
-  },
-  roadHorizontalMid: {
-    height: 10,
-    left: 0,
-    right: 0,
-    top: 304
-  },
-  roadHorizontalLow: {
-    height: 10,
-    left: 0,
-    right: 0,
-    top: 452
-  },
-  roadVerticalLeft: {
-    bottom: 0,
-    left: 152,
-    top: 0,
-    width: 10
-  },
-  roadVerticalMid: {
-    bottom: 0,
-    left: 272,
-    top: 0,
-    width: 10
-  },
-  roadVerticalRight: {
-    bottom: 0,
-    right: 64,
-    top: 0,
-    width: 10
-  },
-  greenZone: {
-    backgroundColor: "rgba(21, 130, 70, 0.28)",
-    borderRadius: 8,
-    position: "absolute"
-  },
-  greenOne: {
-    height: 58,
-    right: 20,
-    top: 60,
-    width: 70
-  },
-  greenTwo: {
-    height: 86,
-    left: 24,
-    top: 332,
-    width: 76
-  },
-  userDot: {
+  userMarker: {
     alignItems: "center",
-    backgroundColor: "rgba(32, 200, 244, 0.2)",
-    borderRadius: 16,
-    height: 32,
+    backgroundColor: "rgba(32, 200, 244, 0.22)",
+    borderRadius: 18,
+    height: 36,
     justifyContent: "center",
-    left: "48%",
-    position: "absolute",
-    top: 290,
-    width: 32
+    width: 36
   },
-  userDotCore: {
+  userMarkerInner: {
     backgroundColor: "#20c8f4",
-    borderColor: "#d8f8ff",
-    borderRadius: 6,
+    borderColor: "#ffffff",
+    borderRadius: 7,
     borderWidth: 2,
-    height: 12,
-    width: 12
+    height: 14,
+    width: 14
   },
-  routeLineOne: {
-    backgroundColor: "#20c8f4",
-    borderRadius: 4,
-    height: 6,
-    left: "51%",
-    position: "absolute",
-    top: 292,
-    width: 72
-  },
-  routeLineTwo: {
-    backgroundColor: "#20c8f4",
-    borderRadius: 4,
-    height: 78,
-    left: "68%",
-    position: "absolute",
-    top: 218,
-    width: 6
-  },
-  routeLineThree: {
-    backgroundColor: "#20c8f4",
-    borderRadius: 4,
-    height: 6,
-    left: "68%",
-    position: "absolute",
-    top: 218,
-    width: 70
-  },
-  mapPin: {
+  parkingMarker: {
     alignItems: "center",
     backgroundColor: "#ffffff",
-    borderRadius: 17,
-    height: 34,
+    borderColor: "#20c8f4",
+    borderRadius: 18,
+    borderWidth: 3,
+    height: 36,
     justifyContent: "center",
-    position: "absolute",
-    right: 42,
-    top: 198,
-    width: 34
+    width: 36
   },
-  mapPinText: {
-    color: "#12121d",
-    fontSize: 12
-  },
-  savedMapBadge: {
-    backgroundColor: "#11111d",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    position: "absolute",
-    right: 78,
-    top: 242
-  },
-  savedMapBadgeText: {
-    color: "#ffffff",
-    fontSize: 11,
+  parkingMarkerText: {
+    color: "#071018",
+    fontSize: 15,
     fontWeight: "900"
-  },
-  mapActions: {
-    gap: 12,
-    position: "absolute",
-    right: 16,
-    top: 118
-  },
-  roundAction: {
-    alignItems: "center",
-    backgroundColor: "#171725",
-    borderColor: "#292941",
-    borderRadius: 20,
-    borderWidth: 1,
-    height: 42,
-    justifyContent: "center",
-    width: 42
-  },
-  roundActionActive: {
-    backgroundColor: "#073f59",
-    borderColor: "#116f93"
-  },
-  roundActionText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  roundActionTextActive: {
-    color: "#20c8f4"
   },
   bottomSheet: {
     backgroundColor: "#11111d",
@@ -898,7 +723,6 @@ const styles = StyleSheet.create({
     marginTop: 4
   },
   vehicleStrip: {
-    flexDirection: "row",
     gap: 8,
     marginTop: 14
   },
@@ -932,7 +756,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#20c8f4",
     borderRadius: 14,
-    flex: 1.1,
+    flex: 1.2,
     paddingVertical: 14
   },
   primaryButtonText: {
@@ -978,16 +802,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12
   },
-  metricIcon: {
-    color: "#20c8f4",
-    fontSize: 13,
-    fontWeight: "900"
-  },
   metricLabel: {
     color: "#777589",
     fontSize: 10,
-    fontWeight: "800",
-    marginTop: 5
+    fontWeight: "800"
   },
   metricValue: {
     color: "#ffffff",
@@ -1003,7 +821,7 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: "row",
-    gap: 10,
+    gap: 8,
     marginTop: 12
   },
   darkButton: {
@@ -1119,54 +937,6 @@ const styles = StyleSheet.create({
   timeButtonTextActive: {
     color: "#071018",
     fontSize: 14,
-    fontWeight: "900"
-  },
-  customTimer: {
-    alignItems: "center",
-    backgroundColor: "#1b1b2d",
-    borderColor: "#28283c",
-    borderRadius: 13,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 12,
-    padding: 12
-  },
-  customTimerText: {
-    color: "#777589",
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "800"
-  },
-  customTimerValue: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "900"
-  },
-  stepperButton: {
-    alignItems: "center",
-    backgroundColor: "#333347",
-    borderRadius: 10,
-    height: 30,
-    justifyContent: "center",
-    width: 30
-  },
-  stepperButtonActive: {
-    alignItems: "center",
-    backgroundColor: "#073f59",
-    borderRadius: 10,
-    height: 30,
-    justifyContent: "center",
-    width: 30
-  },
-  stepperText: {
-    color: "#cbc9d8",
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  stepperTextActive: {
-    color: "#20c8f4",
-    fontSize: 18,
     fontWeight: "900"
   },
   panel: {
