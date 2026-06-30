@@ -387,6 +387,42 @@ export default function App() {
     setNewVehicleName("");
   }
 
+  function deleteVehicle(vehicleId: string) {
+    const vehicle = vehicles.find((currentVehicle) => currentVehicle.id === vehicleId);
+    if (!vehicle) {
+      return;
+    }
+
+    if (parkingSpot?.vehicleId === vehicleId) {
+      Alert.alert(
+        "Fahrzeug wird verwendet",
+        "Dieses Fahrzeug hat gerade einen gespeicherten Parkplatz. Lösche zuerst den Parkplatz."
+      );
+      return;
+    }
+
+    if (vehicles.length === 1) {
+      Alert.alert("Nicht möglich", "Mindestens ein Fahrzeug muss gespeichert bleiben.");
+      return;
+    }
+
+    Alert.alert("Fahrzeug löschen", `${vehicle.name} wirklich entfernen?`, [
+      { text: "Abbrechen", style: "cancel" },
+      {
+        text: "Löschen",
+        style: "destructive",
+        onPress: () => {
+          const remainingVehicles = vehicles.filter((currentVehicle) => currentVehicle.id !== vehicleId);
+          setVehicles(remainingVehicles);
+
+          if (selectedVehicleId === vehicleId) {
+            setSelectedVehicleId(remainingVehicles[0]?.id ?? DEFAULT_VEHICLES[0].id);
+          }
+        }
+      }
+    ]);
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
@@ -575,9 +611,14 @@ export default function App() {
                     <Text style={styles.vehicleName}>{vehicle.name}</Text>
                     <Text style={styles.vehicleType}>{vehicle.type}</Text>
                   </View>
-                  <TouchableOpacity onPress={() => setSelectedVehicleId(vehicle.id)}>
-                    <Text style={styles.linkText}>{selectedVehicleId === vehicle.id ? "Aktiv" : "Auswählen"}</Text>
-                  </TouchableOpacity>
+                  <View style={styles.vehicleActions}>
+                    <TouchableOpacity onPress={() => setSelectedVehicleId(vehicle.id)}>
+                      <Text style={styles.linkText}>{selectedVehicleId === vehicle.id ? "Aktiv" : "Auswählen"}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => deleteVehicle(vehicle.id)}>
+                      <Text style={styles.deleteText}>Löschen</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               ))}
             </View>
@@ -1232,6 +1273,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 13
   },
+  vehicleActions: {
+    alignItems: "flex-end",
+    gap: 8
+  },
   vehicleName: {
     color: "#ffffff",
     fontSize: 16,
@@ -1245,6 +1290,11 @@ const styles = StyleSheet.create({
   linkText: {
     color: "#20c8f4",
     fontSize: 14,
+    fontWeight: "900"
+  },
+  deleteText: {
+    color: "#ff6b6b",
+    fontSize: 13,
     fontWeight: "900"
   },
   photoModalBackdrop: {

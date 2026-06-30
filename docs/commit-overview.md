@@ -1,109 +1,212 @@
 # Commit- und Feature-Uebersicht
 
-Diese Uebersicht erklaert die Entwicklung von CarPin in nachvollziehbaren Feature-Bloecken. So ist erkennbar, dass die App schrittweise aufgebaut wurde und nicht als ein einzelner grosser Code-Dump entstanden ist.
+Diese Uebersicht teilt die Entwicklung von CarPin in kleine, praesentierbare Feature-Schritte auf. Sie ist bewusst feiner gegliedert als die reine Git-History, damit klar wird, welche Funktion wann entstanden ist und was man im Code zeigen kann.
 
-## 1. App-Grundlage
+## 1. Projektstart und Expo-Grundlage
 
 **Branch:** `feature/app-grundlage`  
 **Commit:** `157c17b Add Expo React Native app foundation`
 
-In diesem Schritt wurde die erste startbare React-Native/Expo-App erstellt.
+Ziel dieses Schrittes war eine startbare React-Native-App fuer iPhone.
 
-- Expo-Projektstruktur mit TypeScript eingerichtet
+- Expo/React Native mit TypeScript eingerichtet
+- `app.json`, `tsconfig.json`, `babel.config.js` und `package.json` angelegt
 - Logo `carpin.png` eingebunden
-- Grundseiten angelegt: Parken, Timer, Fahrzeuge
-- lokale Speicherung mit AsyncStorage vorbereitet
-- erste Funktionen eingebaut:
-  - Parkplatz speichern
-  - Foto aufnehmen oder aus Galerie waehlen
-  - Route mit Apple Maps oeffnen
-  - Fahrzeuge hinzufuegen und auswaehlen
-  - Parktimer starten
+- App mit `npm run start` in Expo Go startbar gemacht
 
-## 2. GitLab-CI-Grundlage
+**Code zeigen:** `package.json`, `app.json`, `App.tsx`
 
-**Commit:** `55d2d25 Add GitLab CI validation pipeline`
+## 2. Grundnavigation und Screens
 
-Hier wurde eine einfache GitLab-Pipeline ergaenzt, damit das Projekt automatisch geprueft werden kann.
+**Commit-Bereich:** `157c17b`
 
-- `.gitlab-ci.yml` erstellt
-- Installationsschritt mit `npm ci`
-- TypeScript-Pruefung mit `npm run typecheck`
-- Expo-Kompatibilitaet im CI-Kontext vorbereitet
+Hier wurde die erste App-Struktur erstellt.
 
-## 3. Dunkles App-Design
+- Screen `Parken`
+- Screen `Timer`
+- Screen `Fahrzeuge`
+- einfache Tab-Navigation innerhalb von `App.tsx`
+- Grundzustand mit React State vorbereitet
 
-**Commit:** `8f119c4 Restyle app with dark map interface`
+**Code zeigen:** `type Screen`, `screen`-State und die drei Screen-Bloecke in `App.tsx`
 
-Dieser Schritt hat das erste einfache Layout in ein CarPin-Design nach Mockup-Richtung umgebaut.
+## 3. Fahrzeugverwaltung
 
-- dunkles Interface mit Cyan-Akzent
-- Bottom-Sheet fuer Parkplatzdetails
-- Timer-Ansicht optisch ueberarbeitet
-- Fahrzeugseite optisch angepasst
-- Apple-Maps-Funktion beibehalten
+**Commit-Bereich:** `157c17b`, erweitert in `feature/vehicle-delete-and-detailed-overview`
 
-## 4. Pipeline-Fix
+Die Fahrzeugverwaltung ist ein eigener Feature-Bereich.
 
-**Branch:** `fix/gitlab-ci-pipeline`  
-**Commit:** `a8c8ebc Fix GitLab CI validation job`  
-**Merge:** `1b806d6 Merge branch 'fix/gitlab-ci-pipeline'`
+- Standardfahrzeuge angelegt
+- neues Fahrzeug mit Name und Typ erfassen
+- Fahrzeug auswaehlen
+- Fahrzeug lokal speichern
+- Fahrzeug loeschen
+- Schutz: Das letzte Fahrzeug kann nicht geloescht werden
+- Schutz: Ein Fahrzeug mit aktivem Parkplatz kann nicht geloescht werden
 
-Nachdem die Pipeline weiterhin fehlgeschlagen ist, wurde sie stabiler gemacht.
+**Code zeigen:** `Vehicle`, `DEFAULT_VEHICLES`, `addVehicle`, `deleteVehicle`
 
-- Node-Image auf `node:20-bookworm` angepasst
-- unnoetig fragilen Expo-Installcheck aus der Pipeline entfernt
-- stattdessen ein echter Expo-Bundle-Test ergaenzt
-- finale CI-Schritte:
-  - `npm ci --prefer-offline --no-audit`
-  - `npm run typecheck`
-  - `npx expo export --platform ios --output-dir dist --clear`
+## 4. Lokale Persistenz
 
-## 5. Echte Kartenansicht und UI-Cleanup
+**Commit-Bereich:** `157c17b`, erweitert in `1573217`
+
+Die wichtigsten Daten bleiben nach einem Neustart erhalten.
+
+- Fahrzeuge werden in AsyncStorage gespeichert
+- aktiver Parkplatz wird gespeichert
+- Timer-Endzeit wird gespeichert
+- spaeter ergaenzt:
+  - Timer-Startzeit
+  - Zuordnung Timer zu Parkplatz
+
+**Code zeigen:** `STORAGE_KEYS` und die `useEffect`-Bloecke mit `AsyncStorage`
+
+## 5. Parkplatz speichern
+
+**Commit-Bereich:** `157c17b`, verbessert in `1573217`
+
+Der Parkplatz-Speicherprozess wurde schrittweise verbessert.
+
+- zuerst einfache GPS-Speicherung
+- spaeter echte Standortabfrage beim App-Start
+- Karte zentriert auf aktuellen Standort
+- Parkplatz speichern nutzt den aktuellen Handy-Standort
+- Adresse wird ueber Reverse Geocoding gelesen, wenn moeglich
+
+**Code zeigen:** `getDeviceLocation`, `refreshCurrentLocation`, `saveParkingSpot`, `reverseGeocode`
+
+## 6. Kartenansicht
 
 **Branch:** `fix/cleanup-map-ui`  
 **Commit:** `7ae83bd Clean up controls and add real map view`  
 **Merge:** `32692e8 Merge branch 'fix/cleanup-map-ui'`
 
-Hier wurde die gezeichnete Fake-Karte durch eine echte Kartenkomponente ersetzt.
+Die Karte wurde bewusst als eigenes Feature weiterentwickelt.
 
+- Fake-Karte entfernt
 - `react-native-maps` installiert
 - echte `MapView` eingebaut
-- Marker fuer Standort und Parkplatz ergaenzt
-- visuelle Linie zwischen Standort und Parkplatz eingebaut
-- unnoetige UI-Buttons entfernt:
-  - Drei-Striche-Button oben
-  - reine Mockup-Buttons auf der Karte
-- nicht funktionierenden benutzerdefinierten Timer vorerst entfernt
+- Marker fuer aktuellen Standort
+- Marker fuer gespeicherten Parkplatz
+- einfache Linie zwischen Standort und Parkplatz
+- Button zum erneuten Laden des Standorts
 
-## 6. Standort, Foto und Timer verbessert
+**Code zeigen:** `CarPinMap`, `MapView`, `Marker`, `Polyline`, `MAP_DARK_STYLE`
 
-**Branch:** `feature/location-photo-timer-polish`  
-**Commit:** `1573217 Improve location map photo and timer flow`
+## 7. Apple-Maps-Rueckweg
 
-Dieser Schritt verbessert das Verhalten der App, damit sie weniger abgehackt wirkt.
+**Commit-Bereich:** `157c17b`, beibehalten in allen weiteren UI-Versionen
 
-- Karte fragt beim Start den echten Handy-Standort ab
-- Kartenansicht zentriert nicht mehr standardmaessig sichtbar auf Zuerich
-- Parkplatz speichern nutzt den aktuellen Standort
-- Standort kann manuell neu geladen werden
-- Foto wird erst nach Klick auf `Foto anzeigen` angezeigt
-- Fotoanzeige erfolgt in einer eigenen Vorschau
-- Timer hat wieder ein benutzerdefiniertes Minutenfeld
-- Timer wird dem aktuell gespeicherten Parkplatz zugeteilt
+Die App hat weiterhin eine native Rueckweg-Funktion ueber Apple Maps.
+
+- gespeicherte Koordinaten werden an Apple Maps uebergeben
+- Gehroute wird ausserhalb der App geoeffnet
+- eigene Kartenansicht bleibt parallel in CarPin sichtbar
+
+**Code zeigen:** `openRoute`
+
+## 8. Parkplatzfoto
+
+**Commit-Bereich:** `157c17b`, verbessert in `1573217`
+
+Das Foto-Feature wurde von einer einfachen Anzeige zu einem besseren Ablauf erweitert.
+
+- Foto mit Kamera aufnehmen
+- Foto aus Galerie waehlen
+- Foto wird mit aktivem Parkplatz verknuepft
+- Foto wird nicht dauerhaft im Bottom-Sheet angezeigt
+- Foto erscheint erst nach Klick auf `Foto anzeigen`
+- eigene Foto-Vorschau mit Modal
+
+**Code zeigen:** `pickPhoto`, `isPhotoVisible`, `Modal`, `photoPreview`
+
+## 9. Parktimer
+
+**Commit-Bereich:** `157c17b`, verbessert in `1573217`
+
+Der Timer ist ein eigener Funktionsbereich.
+
+- vordefinierte Zeiten:
+  - 30 Minuten
+  - 1 Stunde
+  - 2 Stunden
+- benutzerdefiniertes Minutenfeld
 - Timer kann nicht ohne gespeicherten Parkplatz gestartet werden
+- Timer wird dem aktuellen Parkplatz zugeteilt
+- Timerdaten werden lokal gespeichert
+
+**Code zeigen:** `startTimer`, `startCustomTimer`, `timerSpotId`, `timerStartedAt`, `customTimerMinutes`
+
+## 10. Design-Ueberarbeitung
+
+**Commit:** `8f119c4 Restyle app with dark map interface`
+
+In diesem Schritt wurde das einfache Grundlayout optisch in Richtung CarPin-Mockup gebracht.
+
+- dunkles Interface
+- Cyan-Akzentfarbe
+- Bottom-Sheet fuer Parkplatzdetails
+- Timer-Ring
+- Kartenfokus als Hauptscreen
+
+**Code zeigen:** `styles`, `bottomSheet`, `timerRing`, `savedCard`
+
+## 11. UI-Cleanup
+
+**Commit:** `7ae83bd Clean up controls and add real map view`
+
+Hier wurden Elemente entfernt, die nur nach Mockup aussahen, aber keine echte Funktion hatten.
+
+- Drei-Striche-Button oben entfernt
+- reine Deko-Buttons auf der Karte entfernt
+- benutzerdefinierten Timer erst entfernt, spaeter funktional wieder eingebaut
+
+**Code zeigen:** Vergleich zwischen alter Doku/History und aktuellem `App.tsx`
+
+## 12. GitLab-CI
+
+**Commits:**  
+`55d2d25 Add GitLab CI validation pipeline`  
+`a8c8ebc Fix GitLab CI validation job`  
+`1b806d6 Merge branch 'fix/gitlab-ci-pipeline'`
+
+Die Pipeline wurde als eigenes Infrastruktur-Feature gepflegt.
+
+- GitLab-CI-Datei erstellt
+- Node-Image auf `node:20-bookworm` angepasst
+- Installation mit `npm ci`
+- TypeScript-Check
+- Expo-iOS-Export als Build-Nachweis
+
+**Code zeigen:** `.gitlab-ci.yml`
+
+## 13. Dokumentation der Entwicklung
+
+**Branch:** `docs/commit-overview`  
+**Commit:** `14712c3 Add feature commit overview`
+
+Damit die Entwicklung im GitLab besser nachvollziehbar ist, wurde diese Feature-Uebersicht erstellt.
+
+- Feature-Bloecke statt nur grosser Merge-History
+- Code-Stellen fuer Demo und Fachgespraech
+- README verweist auf diese Uebersicht
+
+**Code zeigen:** `docs/commit-overview.md`, `README.md`
 
 ## Empfohlene Praesentationsreihenfolge
 
-1. `feature/app-grundlage`: Grundapp und Hauptfunktionen zeigen.
-2. `.gitlab-ci.yml`: zeigen, wie die Pipeline prueft, ob die App baubar ist.
-3. `8f119c4`: Designentwicklung erklaeren.
-4. `fix/cleanup-map-ui`: echte Kartenansicht zeigen.
-5. `feature/location-photo-timer-polish`: verbesserten Ablauf mit Standort, Foto und Timer zeigen.
+1. Projektstart: Expo-App starten und Grundstruktur zeigen.
+2. Fahrzeugverwaltung: Fahrzeug hinzufuegen, auswaehlen und loeschen.
+3. Parkplatz speichern: Standortzugriff und Speichern erklaeren.
+4. Kartenansicht: `react-native-maps`, Marker und Linie zeigen.
+5. Foto: Kamera/Galerie und Foto-Vorschau zeigen.
+6. Timer: vordefinierte Zeiten, benutzerdefiniertes Feld und Parkplatz-Zuordnung zeigen.
+7. Pipeline: `.gitlab-ci.yml` und automatische Checks zeigen.
 
 ## Wichtige Dateien fuer die Code-Demo
 
-- `App.tsx`: Hauptlogik, Screens, Karte, Timer und Fotoanzeige
+- `App.tsx`: Hauptlogik, Screens, Karte, Timer, Foto und Fahrzeugverwaltung
 - `package.json`: Expo-Abhaengigkeiten und Startskripte
 - `.gitlab-ci.yml`: Pipeline mit Installations-, Typecheck- und Expo-Export-Schritt
 - `app.json`: Expo-Konfiguration und iOS-Berechtigungen
+- `docs/commit-overview.md`: Feature- und Commit-Uebersicht
