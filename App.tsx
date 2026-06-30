@@ -8,6 +8,7 @@ import {
   Image,
   Linking,
   Modal,
+  PanResponder,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -40,6 +41,7 @@ type ParkingSpot = Coordinate & {
 };
 
 type Screen = "dashboard" | "timer" | "vehicles";
+type SheetMode = "compact" | "mid" | "full";
 
 const STORAGE_KEYS = {
   vehicles: "carpin:vehicles",
@@ -128,6 +130,7 @@ export default function App() {
   const [isSavingSpot, setIsSavingSpot] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isPhotoVisible, setIsPhotoVisible] = useState(false);
+  const [sheetMode, setSheetMode] = useState<SheetMode>("mid");
 
   useEffect(() => {
     async function loadState() {
@@ -225,6 +228,25 @@ export default function App() {
     latitudeDelta: parkingSpot ? 0.006 : 0.012,
     longitudeDelta: parkingSpot ? 0.006 : 0.012
   };
+  const bottomSheetModeStyle =
+    sheetMode === "full" ? styles.bottomSheetFull : sheetMode === "compact" ? styles.bottomSheetCompact : styles.bottomSheetMid;
+  const sheetPanResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_event, gesture) => Math.abs(gesture.dy) > 8,
+        onPanResponderRelease: (_event, gesture) => {
+          if (gesture.dy < -40) {
+            setSheetMode((currentMode) => (currentMode === "compact" ? "mid" : "full"));
+            return;
+          }
+
+          if (gesture.dy > 40) {
+            setSheetMode((currentMode) => (currentMode === "full" ? "mid" : "compact"));
+          }
+        }
+      }),
+    []
+  );
 
   async function getDeviceLocation(showErrors: boolean) {
     setIsLocating(true);
@@ -369,6 +391,20 @@ export default function App() {
     setIsPhotoVisible(false);
   }
 
+  function toggleSheetMode() {
+    setSheetMode((currentMode) => {
+      if (currentMode === "compact") {
+        return "mid";
+      }
+
+      if (currentMode === "mid") {
+        return "full";
+      }
+
+      return "compact";
+    });
+  }
+
   function addVehicle() {
     const trimmedName = newVehicleName.trim();
     if (!trimmedName) {
@@ -396,7 +432,7 @@ export default function App() {
     if (parkingSpot?.vehicleId === vehicleId) {
       Alert.alert(
         "Fahrzeug wird verwendet",
-        "Dieses Fahrzeug hat gerade einen gespeicherten Parkplatz. Lösche zuerst den Parkplatz."
+        "Dieses Fahrzeug hat gerade einen gespeicherten Parkplatz. Beende zuerst das Parking."
       );
       return;
     }
@@ -445,10 +481,27 @@ export default function App() {
               region={mapRegion}
             />
 
-            <View style={styles.bottomSheet}>
-              <View style={styles.handle} />
+            <View style={[styles.bottomSheet, bottomSheetModeStyle]}>
+              <View style={styles.sheetHandleArea} {...sheetPanResponder.panHandlers}>
+                <TouchableOpacity style={styles.handleTapTarget} onPress={toggleSheetMode}>
+                  <View style={styles.handle} />
+                  <Text style={styles.sheetHint}>
+                    {sheetMode === "full" ? "Nach unten ziehen" : sheetMode === "compact" ? "Nach oben ziehen" : "Ziehen für Vollbild"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-              {parkingSpot ? (
+              {sheetMode === "compact" ? (
+                <TouchableOpacity
+                  style={parkingSpot ? styles.endParkingButton : styles.primaryButton}
+                  onPress={parkingSpot ? clearParkingSpot : saveParkingSpot}
+                  disabled={isSavingSpot}
+                >
+                  <Text style={parkingSpot ? styles.endParkingButtonText : styles.primaryButtonText}>
+                    {parkingSpot ? "Parking beenden" : isSavingSpot ? "Speichere..." : "Parkplatz speichern"}
+                  </Text>
+                </TouchableOpacity>
+              ) : parkingSpot ? (
                 <>
                   <View style={styles.savedCard}>
                     <Text style={styles.savedEyebrow}>Parkplatz gespeichert</Text>
@@ -486,8 +539,8 @@ export default function App() {
                     <Text style={styles.timerShortcutText}>Parktimer für diesen Parkplatz setzen</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.ghostButton} onPress={clearParkingSpot}>
-                    <Text style={styles.ghostButtonText}>Parkplatz löschen</Text>
+                  <TouchableOpacity style={styles.endParkingButton} onPress={clearParkingSpot}>
+                    <Text style={styles.endParkingButtonText}>Parking beenden</Text>
                   </TouchableOpacity>
                 </>
               ) : (
@@ -902,13 +955,35 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 0
   },
+  bottomSheetCompact: {
+    minHeight: 112
+  },
+  bottomSheetMid: {
+    minHeight: 292
+  },
+  bottomSheetFull: {
+    height: "86%"
+  },
+  sheetHandleArea: {
+    marginBottom: 12
+  },
+  handleTapTarget: {
+    alignItems: "center",
+    paddingBottom: 2,
+    paddingTop: 2
+  },
   handle: {
     alignSelf: "center",
     backgroundColor: "#414154",
     borderRadius: 2,
     height: 4,
-    marginBottom: 16,
+    marginBottom: 7,
     width: 38
+  },
+  sheetHint: {
+    color: "#777589",
+    fontSize: 11,
+    fontWeight: "800"
   },
   lastSavedCard: {
     alignItems: "center",
@@ -1081,6 +1156,20 @@ const styles = StyleSheet.create({
     color: "#777589",
     fontSize: 12,
     fontWeight: "800"
+  },
+  endParkingButton: {
+    alignItems: "center",
+    backgroundColor: "#2b1b23",
+    borderColor: "#6f2b3c",
+    borderRadius: 16,
+    borderWidth: 1,
+    marginTop: 12,
+    paddingVertical: 15
+  },
+  endParkingButtonText: {
+    color: "#ff8a9a",
+    fontSize: 14,
+    fontWeight: "900"
   },
   content: {
     paddingBottom: 28
