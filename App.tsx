@@ -2,9 +2,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
+  Animated,
+  Dimensions,
   Image,
   Linking,
   Modal,
@@ -61,6 +63,11 @@ const DEFAULT_VEHICLES: Vehicle[] = [
 const FALLBACK_COORDINATE: Coordinate = {
   latitude: 47.3769,
   longitude: 8.5417
+};
+const SHEET_HEIGHTS: Record<SheetMode, number> = {
+  compact: 112,
+  mid: 306,
+  full: Math.round(Dimensions.get("window").height * 0.86)
 };
 
 const MAP_DARK_STYLE = [
@@ -131,6 +138,7 @@ export default function App() {
   const [isLocating, setIsLocating] = useState(false);
   const [isPhotoVisible, setIsPhotoVisible] = useState(false);
   const [sheetMode, setSheetMode] = useState<SheetMode>("mid");
+  const sheetHeight = useRef(new Animated.Value(SHEET_HEIGHTS.mid)).current;
 
   useEffect(() => {
     async function loadState() {
@@ -213,6 +221,16 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    Animated.spring(sheetHeight, {
+      toValue: SHEET_HEIGHTS[sheetMode],
+      damping: 24,
+      mass: 0.9,
+      stiffness: 190,
+      useNativeDriver: false
+    }).start();
+  }, [sheetHeight, sheetMode]);
+
   const selectedVehicle = useMemo(
     () => vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ?? vehicles[0],
     [selectedVehicleId, vehicles]
@@ -228,8 +246,9 @@ export default function App() {
     latitudeDelta: parkingSpot ? 0.006 : 0.012,
     longitudeDelta: parkingSpot ? 0.006 : 0.012
   };
-  const bottomSheetModeStyle =
-    sheetMode === "full" ? styles.bottomSheetFull : sheetMode === "compact" ? styles.bottomSheetCompact : styles.bottomSheetMid;
+  const currentAddressLabel = parkingSpot?.address || (currentLocation ? "Aktueller Standort" : "Standort wird gesucht");
+  const coordinateLabel = `${activeMapCoordinate.latitude.toFixed(5)}, ${activeMapCoordinate.longitude.toFixed(5)}`;
+  const bottomSheetAnimatedStyle = { height: sheetHeight };
   const sheetPanResponder = useMemo(
     () =>
       PanResponder.create({
@@ -481,7 +500,7 @@ export default function App() {
               region={mapRegion}
             />
 
-            <View style={[styles.bottomSheet, bottomSheetModeStyle]}>
+            <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]}>
               <View style={styles.sheetHandleArea} {...sheetPanResponder.panHandlers}>
                 <TouchableOpacity style={styles.handleTapTarget} onPress={toggleSheetMode}>
                   <View style={styles.handle} />
@@ -501,6 +520,68 @@ export default function App() {
                     {parkingSpot ? "Parking beenden" : isSavingSpot ? "Speichere..." : "Parkplatz speichern"}
                   </Text>
                 </TouchableOpacity>
+              ) : sheetMode === "full" ? (
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.fullSheetContent}>
+                  <View style={styles.fullHeaderCard}>
+                    <View style={styles.fullHeaderIcon}>
+                      <Text style={styles.fullHeaderIconText}>P</Text>
+                    </View>
+                    <View style={styles.fullHeaderText}>
+                      <Text style={styles.savedEyebrow}>{parkingSpot ? "Parking aktiv" : "Bereit zum Speichern"}</Text>
+                      <Text style={styles.fullAddressTitle}>{currentAddressLabel}</Text>
+                      <Text style={styles.savedMeta}>
+                        {parkingSpot
+                          ? `${selectedVehicle?.name ?? "Fahrzeug"} · ${formatTime(parkingSpot.savedAt)}`
+                          : `${selectedVehicle?.name ?? "Fahrzeug"} · Standort prüfen und Parkplatz speichern`}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.fullIconGrid}>
+                    <FullInfoTile icon="⌖" label="Standort" value={coordinateLabel} />
+                    <FullInfoTile icon="A" label="Fahrzeug" value={selectedVehicle?.name ?? "Kein Fahrzeug"} />
+                    <FullInfoTile
+                      icon="⏱"
+                      label="Timer"
+                      value={parkingSpot && timerSpotMatchesActiveSpot && timerIsActive ? formatCountdown(remainingMs) : "nicht gesetzt"}
+                    />
+                    <FullInfoTile icon="▣" label="Foto" value={parkingSpot?.photoUri ? "gespeichert" : "noch offen"} />
+                  </View>
+
+                  <View style={styles.fullActionPanel}>
+                    {parkingSpot ? (
+                      <>
+                        <TouchableOpacity style={styles.primaryButton} onPress={openRoute}>
+                          <Text style={styles.primaryButtonText}>Zurück zum Auto</Text>
+                        </TouchableOpacity>
+                        <View style={styles.actionRow}>
+                          <TouchableOpacity style={styles.darkButton} onPress={() => pickPhoto("camera")}>
+                            <Text style={styles.darkButtonText}>Foto aufnehmen</Text>
+                          </TouchableOpacity>
+                          {parkingSpot.photoUri ? (
+                            <TouchableOpacity style={styles.darkButton} onPress={() => setIsPhotoVisible(true)}>
+                              <Text style={styles.darkButtonText}>Foto anzeigen</Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity style={styles.darkButton} onPress={() => pickPhoto("library")}>
+                              <Text style={styles.darkButtonText}>Galerie</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                        <TouchableOpacity style={styles.timerShortcut} onPress={() => setScreen("timer")}>
+                          <Text style={styles.timerShortcutText}>Parktimer für diesen Parkplatz setzen</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.endParkingButton} onPress={clearParkingSpot}>
+                          <Text style={styles.endParkingButtonText}>Parking beenden</Text>
+                        </TouchableOpacity>
+                      </>
+                    ) : (
+                      <TouchableOpacity style={styles.primaryButton} onPress={saveParkingSpot} disabled={isSavingSpot}>
+                        <Text style={styles.primaryButtonText}>{isSavingSpot ? "Speichere..." : "Parkplatz speichern"}</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </ScrollView>
               ) : parkingSpot ? (
                 <>
                   <View style={styles.savedCard}>
@@ -574,7 +655,7 @@ export default function App() {
                   </TouchableOpacity>
                 </>
               )}
-            </View>
+            </Animated.View>
           </View>
         )}
 
@@ -789,6 +870,24 @@ type MetricProps = {
   value: string;
 };
 
+type FullInfoTileProps = {
+  icon: string;
+  label: string;
+  value: string;
+};
+
+function FullInfoTile({ icon, label, value }: FullInfoTileProps) {
+  return (
+    <View style={styles.fullInfoTile}>
+      <View style={styles.fullInfoIcon}>
+        <Text style={styles.fullInfoIconText}>{icon}</Text>
+      </View>
+      <Text style={styles.fullInfoLabel}>{label}</Text>
+      <Text style={styles.fullInfoValue}>{value}</Text>
+    </View>
+  );
+}
+
 function Metric({ label, value }: MetricProps) {
   return (
     <View style={styles.metric}>
@@ -950,19 +1049,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     bottom: 0,
     left: 0,
+    overflow: "hidden",
     padding: 16,
     paddingBottom: 20,
     position: "absolute",
     right: 0
-  },
-  bottomSheetCompact: {
-    minHeight: 112
-  },
-  bottomSheetMid: {
-    minHeight: 292
-  },
-  bottomSheetFull: {
-    height: "86%"
   },
   sheetHandleArea: {
     marginBottom: 12
@@ -984,6 +1075,87 @@ const styles = StyleSheet.create({
     color: "#777589",
     fontSize: 11,
     fontWeight: "800"
+  },
+  fullSheetContent: {
+    paddingBottom: 26
+  },
+  fullHeaderCard: {
+    alignItems: "center",
+    backgroundColor: "#0e3448",
+    borderColor: "#176783",
+    borderRadius: 20,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 14,
+    padding: 16
+  },
+  fullHeaderIcon: {
+    alignItems: "center",
+    backgroundColor: "#20c8f4",
+    borderRadius: 18,
+    height: 48,
+    justifyContent: "center",
+    width: 48
+  },
+  fullHeaderIconText: {
+    color: "#071018",
+    fontSize: 22,
+    fontWeight: "900"
+  },
+  fullHeaderText: {
+    flex: 1
+  },
+  fullAddressTitle: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontWeight: "900",
+    lineHeight: 25,
+    marginTop: 8
+  },
+  fullIconGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 14
+  },
+  fullInfoTile: {
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 16,
+    borderWidth: 1,
+    minHeight: 112,
+    padding: 13,
+    width: "48%"
+  },
+  fullInfoIcon: {
+    alignItems: "center",
+    backgroundColor: "#073f59",
+    borderRadius: 12,
+    height: 32,
+    justifyContent: "center",
+    marginBottom: 10,
+    width: 32
+  },
+  fullInfoIconText: {
+    color: "#20c8f4",
+    fontSize: 15,
+    fontWeight: "900"
+  },
+  fullInfoLabel: {
+    color: "#777589",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  fullInfoValue: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "900",
+    lineHeight: 18,
+    marginTop: 5
+  },
+  fullActionPanel: {
+    marginTop: 4
   },
   lastSavedCard: {
     alignItems: "center",
