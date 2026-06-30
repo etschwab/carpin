@@ -7,6 +7,7 @@ import {
   Alert,
   Image,
   Linking,
+  Modal,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -25,11 +26,14 @@ type Vehicle = {
   type: VehicleType;
 };
 
-type ParkingSpot = {
-  id: string;
-  vehicleId: string;
+type Coordinate = {
   latitude: number;
   longitude: number;
+};
+
+type ParkingSpot = Coordinate & {
+  id: string;
+  vehicleId: string;
   savedAt: string;
   address?: string;
   photoUri?: string;
@@ -40,7 +44,9 @@ type Screen = "dashboard" | "timer" | "vehicles";
 const STORAGE_KEYS = {
   vehicles: "carpin:vehicles",
   parkingSpot: "carpin:parkingSpot",
-  timerEnd: "carpin:timerEnd"
+  timerEnd: "carpin:timerEnd",
+  timerStartedAt: "carpin:timerStartedAt",
+  timerSpotId: "carpin:timerSpotId"
 };
 
 const VEHICLE_TYPES: VehicleType[] = ["Auto", "Fahrrad", "Motorrad", "Scooter"];
@@ -50,7 +56,7 @@ const DEFAULT_VEHICLES: Vehicle[] = [
   { id: "vehicle-bike", name: "Tims Fahrrad", type: "Fahrrad" }
 ];
 
-const FALLBACK_COORDINATE = {
+const FALLBACK_COORDINATE: Coordinate = {
   latitude: 47.3769,
   longitude: 8.5417
 };
@@ -84,6 +90,15 @@ function formatCountdown(ms: number) {
   return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+function parseMinutes(value: string) {
+  const parsed = Number.parseInt(value.trim(), 10);
+  if (Number.isNaN(parsed) || parsed < 1) {
+    return null;
+  }
+
+  return Math.min(parsed, 24 * 60);
+}
+
 async function reverseGeocode(latitude: number, longitude: number) {
   try {
     const [place] = await Location.reverseGeocodeAsync({ latitude, longitude });
@@ -102,19 +117,28 @@ export default function App() {
   const [vehicles, setVehicles] = useState<Vehicle[]>(DEFAULT_VEHICLES);
   const [selectedVehicleId, setSelectedVehicleId] = useState(DEFAULT_VEHICLES[0].id);
   const [parkingSpot, setParkingSpot] = useState<ParkingSpot | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [newVehicleName, setNewVehicleName] = useState("");
   const [newVehicleType, setNewVehicleType] = useState<VehicleType>("Auto");
   const [timerEnd, setTimerEnd] = useState<string | null>(null);
+  const [timerStartedAt, setTimerStartedAt] = useState<string | null>(null);
+  const [timerSpotId, setTimerSpotId] = useState<string | null>(null);
+  const [customTimerMinutes, setCustomTimerMinutes] = useState("90");
   const [now, setNow] = useState(Date.now());
   const [isSavingSpot, setIsSavingSpot] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [isPhotoVisible, setIsPhotoVisible] = useState(false);
 
   useEffect(() => {
     async function loadState() {
-      const [storedVehicles, storedParkingSpot, storedTimerEnd] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEYS.vehicles),
-        AsyncStorage.getItem(STORAGE_KEYS.parkingSpot),
-        AsyncStorage.getItem(STORAGE_KEYS.timerEnd)
-      ]);
+      const [storedVehicles, storedParkingSpot, storedTimerEnd, storedTimerStartedAt, storedTimerSpotId] =
+        await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEYS.vehicles),
+          AsyncStorage.getItem(STORAGE_KEYS.parkingSpot),
+          AsyncStorage.getItem(STORAGE_KEYS.timerEnd),
+          AsyncStorage.getItem(STORAGE_KEYS.timerStartedAt),
+          AsyncStorage.getItem(STORAGE_KEYS.timerSpotId)
+        ]);
 
       if (storedVehicles) {
         const parsedVehicles = JSON.parse(storedVehicles) as Vehicle[];
@@ -129,11 +153,20 @@ export default function App() {
       if (storedTimerEnd) {
         setTimerEnd(storedTimerEnd);
       }
+
+      if (storedTimerStartedAt) {
+        setTimerStartedAt(storedTimerStartedAt);
+      }
+
+      if (storedTimerSpotId) {
+        setTimerSpotId(storedTimerSpotId);
+      }
     }
 
     loadState().catch(() => {
       Alert.alert("Speicherfehler", "Die lokalen Daten konnten nicht gelesen werden.");
     });
+    refreshCurrentLocation(true).catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -157,6 +190,22 @@ export default function App() {
   }, [timerEnd]);
 
   useEffect(() => {
+    if (timerStartedAt) {
+      AsyncStorage.setItem(STORAGE_KEYS.timerStartedAt, timerStartedAt).catch(() => undefined);
+    } else {
+      AsyncStorage.removeItem(STORAGE_KEYS.timerStartedAt).catch(() => undefined);
+    }
+  }, [timerStartedAt]);
+
+  useEffect(() => {
+    if (timerSpotId) {
+      AsyncStorage.setItem(STORAGE_KEYS.timerSpotId, timerSpotId).catch(() => undefined);
+    } else {
+      AsyncStorage.removeItem(STORAGE_KEYS.timerSpotId).catch(() => undefined);
+    }
+  }, [timerSpotId]);
+
+  useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
@@ -166,14 +215,52 @@ export default function App() {
     [selectedVehicleId, vehicles]
   );
 
+  const timerSpotMatchesActiveSpot = Boolean(parkingSpot && timerSpotId === parkingSpot.id);
   const remainingMs = timerEnd ? new Date(timerEnd).getTime() - now : 0;
   const timerIsActive = Boolean(timerEnd && remainingMs > 0);
+  const activeMapCoordinate = parkingSpot ?? currentLocation ?? FALLBACK_COORDINATE;
   const mapRegion: Region = {
-    latitude: parkingSpot?.latitude ?? FALLBACK_COORDINATE.latitude,
-    longitude: parkingSpot?.longitude ?? FALLBACK_COORDINATE.longitude,
-    latitudeDelta: parkingSpot ? 0.006 : 0.02,
-    longitudeDelta: parkingSpot ? 0.006 : 0.02
+    latitude: activeMapCoordinate.latitude,
+    longitude: activeMapCoordinate.longitude,
+    latitudeDelta: parkingSpot ? 0.006 : 0.012,
+    longitudeDelta: parkingSpot ? 0.006 : 0.012
   };
+
+  async function getDeviceLocation(showErrors: boolean) {
+    setIsLocating(true);
+
+    try {
+      const permission = await Location.requestForegroundPermissionsAsync();
+      if (permission.status !== "granted") {
+        if (showErrors) {
+          Alert.alert("Standort fehlt", "Erlaube den Standortzugriff, damit CarPin deine Karte richtig anzeigen kann.");
+        }
+        return null;
+      }
+
+      const position = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced
+      });
+      const coordinate = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude
+      };
+
+      setCurrentLocation(coordinate);
+      return coordinate;
+    } catch {
+      if (showErrors) {
+        Alert.alert("Standortfehler", "Dein aktueller Standort konnte nicht gelesen werden.");
+      }
+      return null;
+    } finally {
+      setIsLocating(false);
+    }
+  }
+
+  async function refreshCurrentLocation(silent = false) {
+    return getDeviceLocation(!silent);
+  }
 
   async function saveParkingSpot() {
     if (!selectedVehicle) {
@@ -185,28 +272,23 @@ export default function App() {
     setIsSavingSpot(true);
 
     try {
-      const permission = await Location.requestForegroundPermissionsAsync();
-      if (permission.status !== "granted") {
-        Alert.alert("Standort fehlt", "Erlaube den Standortzugriff, damit CarPin den Parkplatz speichern kann.");
+      const coordinate = await getDeviceLocation(true);
+      if (!coordinate) {
         return;
       }
 
-      const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced
-      });
-      const { latitude, longitude } = position.coords;
-      const address = await reverseGeocode(latitude, longitude);
+      const address = await reverseGeocode(coordinate.latitude, coordinate.longitude);
 
       setParkingSpot({
         id: String(Date.now()),
         vehicleId: selectedVehicle.id,
-        latitude,
-        longitude,
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude,
         address: address || "Gespeicherter Parkplatz",
         savedAt: new Date().toISOString()
       });
 
-      Alert.alert("Parkplatz gespeichert", "Dein Standort wurde in der Kartenansicht markiert.");
+      Alert.alert("Parkplatz gespeichert", "Dein aktueller Standort wurde in der Karte gespeichert.");
     } catch {
       Alert.alert("Fehler", "Der Parkplatz konnte nicht gespeichert werden.");
     } finally {
@@ -252,9 +334,39 @@ export default function App() {
   }
 
   function startTimer(minutes: number) {
+    if (!parkingSpot) {
+      Alert.alert("Kein Parkplatz", "Speichere zuerst einen Parkplatz, damit der Timer zugeteilt werden kann.");
+      setScreen("dashboard");
+      return;
+    }
+
+    const start = new Date().toISOString();
     const end = new Date(Date.now() + minutes * 60 * 1000).toISOString();
+    setTimerStartedAt(start);
     setTimerEnd(end);
+    setTimerSpotId(parkingSpot.id);
     setScreen("timer");
+  }
+
+  function startCustomTimer() {
+    const minutes = parseMinutes(customTimerMinutes);
+    if (!minutes) {
+      Alert.alert("Ungültige Zeit", "Gib eine Parkdauer in Minuten ein.");
+      return;
+    }
+
+    startTimer(minutes);
+  }
+
+  function clearParkingSpot() {
+    if (parkingSpot?.id === timerSpotId) {
+      setTimerEnd(null);
+      setTimerStartedAt(null);
+      setTimerSpotId(null);
+    }
+
+    setParkingSpot(null);
+    setIsPhotoVisible(false);
   }
 
   function addVehicle() {
@@ -275,6 +387,42 @@ export default function App() {
     setNewVehicleName("");
   }
 
+  function deleteVehicle(vehicleId: string) {
+    const vehicle = vehicles.find((currentVehicle) => currentVehicle.id === vehicleId);
+    if (!vehicle) {
+      return;
+    }
+
+    if (parkingSpot?.vehicleId === vehicleId) {
+      Alert.alert(
+        "Fahrzeug wird verwendet",
+        "Dieses Fahrzeug hat gerade einen gespeicherten Parkplatz. Lösche zuerst den Parkplatz."
+      );
+      return;
+    }
+
+    if (vehicles.length === 1) {
+      Alert.alert("Nicht möglich", "Mindestens ein Fahrzeug muss gespeichert bleiben.");
+      return;
+    }
+
+    Alert.alert("Fahrzeug löschen", `${vehicle.name} wirklich entfernen?`, [
+      { text: "Abbrechen", style: "cancel" },
+      {
+        text: "Löschen",
+        style: "destructive",
+        onPress: () => {
+          const remainingVehicles = vehicles.filter((currentVehicle) => currentVehicle.id !== vehicleId);
+          setVehicles(remainingVehicles);
+
+          if (selectedVehicleId === vehicleId) {
+            setSelectedVehicleId(remainingVehicles[0]?.id ?? DEFAULT_VEHICLES[0].id);
+          }
+        }
+      }
+    ]);
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
@@ -289,7 +437,13 @@ export default function App() {
 
         {screen === "dashboard" && (
           <View style={styles.mapScreen}>
-            <CarPinMap parkingSpot={parkingSpot} region={mapRegion} />
+            <CarPinMap
+              currentLocation={currentLocation}
+              isLocating={isLocating}
+              onRefreshLocation={() => refreshCurrentLocation(false)}
+              parkingSpot={parkingSpot}
+              region={mapRegion}
+            />
 
             <View style={styles.bottomSheet}>
               <View style={styles.handle} />
@@ -305,26 +459,34 @@ export default function App() {
                   </View>
 
                   <View style={styles.metricsRow}>
-                    <Metric label="Entfernung" value="340 m" />
-                    <Metric label="Gehzeit" value="~4 min" />
-                    <Metric label="Parkdauer" value={timerIsActive ? formatCountdown(remainingMs) : "0:12"} />
+                    <Metric label="Timer" value={timerSpotMatchesActiveSpot && timerIsActive ? formatCountdown(remainingMs) : "nicht gesetzt"} />
+                    <Metric label="Foto" value={parkingSpot.photoUri ? "gespeichert" : "offen"} />
+                    <Metric label="Route" value="Apple Maps" />
                   </View>
-
-                  {parkingSpot.photoUri && <Image source={{ uri: parkingSpot.photoUri }} style={styles.parkingPhoto} />}
 
                   <View style={styles.actionRow}>
                     <TouchableOpacity style={styles.darkButton} onPress={() => pickPhoto("camera")}>
                       <Text style={styles.darkButtonText}>Foto aufnehmen</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.darkButton} onPress={() => pickPhoto("library")}>
-                      <Text style={styles.darkButtonText}>Galerie</Text>
-                    </TouchableOpacity>
+                    {parkingSpot.photoUri ? (
+                      <TouchableOpacity style={styles.darkButton} onPress={() => setIsPhotoVisible(true)}>
+                        <Text style={styles.darkButtonText}>Foto anzeigen</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity style={styles.darkButton} onPress={() => pickPhoto("library")}>
+                        <Text style={styles.darkButtonText}>Galerie</Text>
+                      </TouchableOpacity>
+                    )}
                     <TouchableOpacity style={styles.primaryButtonSmall} onPress={openRoute}>
                       <Text style={styles.primaryButtonText}>Zurück zum Auto</Text>
                     </TouchableOpacity>
                   </View>
 
-                  <TouchableOpacity style={styles.ghostButton} onPress={() => setParkingSpot(null)}>
+                  <TouchableOpacity style={styles.timerShortcut} onPress={() => setScreen("timer")}>
+                    <Text style={styles.timerShortcutText}>Parktimer für diesen Parkplatz setzen</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.ghostButton} onPress={clearParkingSpot}>
                     <Text style={styles.ghostButtonText}>Parkplatz löschen</Text>
                   </TouchableOpacity>
                 </>
@@ -334,7 +496,7 @@ export default function App() {
                     <View style={styles.pinBadge}>
                       <Text style={styles.pinBadgeText}>P</Text>
                     </View>
-                    <View>
+                    <View style={styles.lastSavedContent}>
                       <Text style={styles.lastSavedLabel}>Aktives Fahrzeug</Text>
                       <Text style={styles.lastSavedText}>{selectedVehicle?.name ?? "Noch kein Fahrzeug"}</Text>
                     </View>
@@ -368,13 +530,19 @@ export default function App() {
             <View style={styles.timerRing}>
               <View style={styles.timerArc} />
               <Text style={styles.timerLabel}>Verbleibend</Text>
-              <Text style={styles.timerValue}>{timerIsActive ? formatCountdown(remainingMs) : "1:00"}</Text>
+              <Text style={styles.timerValue}>{timerIsActive ? formatCountdown(remainingMs) : "0:00:00"}</Text>
               <Text style={styles.timerUnit}>Std</Text>
             </View>
 
-            <View style={styles.timerInfo}>
-              <Text style={styles.timerInfoText}>
-                {timerEnd ? `Endet ${formatTime(timerEnd)}` : "Kein aktiver Timer"}
+            <View style={styles.assignmentCard}>
+              <Text style={styles.assignmentLabel}>Zugewiesener Parkplatz</Text>
+              <Text style={styles.assignmentTitle}>
+                {parkingSpot ? parkingSpot.address || "Gespeicherter Parkplatz" : "Noch kein Parkplatz gespeichert"}
+              </Text>
+              <Text style={styles.assignmentMeta}>
+                {timerSpotMatchesActiveSpot && timerStartedAt
+                  ? `Gestartet ${formatTime(timerStartedAt)} · Endet ${timerEnd ? formatTime(timerEnd) : "-"}`
+                  : "Timer wird beim Start diesem Parkplatz zugeteilt."}
               </Text>
             </View>
 
@@ -391,9 +559,20 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.primaryButton} onPress={() => startTimer(60)}>
-              <Text style={styles.primaryButtonText}>1 h Timer starten</Text>
-            </TouchableOpacity>
+            <View style={styles.customTimerRow}>
+              <TextInput
+                keyboardType="number-pad"
+                maxLength={4}
+                onChangeText={setCustomTimerMinutes}
+                placeholder="Minuten"
+                placeholderTextColor="#777589"
+                style={styles.timerInput}
+                value={customTimerMinutes}
+              />
+              <TouchableOpacity style={styles.customTimerButton} onPress={startCustomTimer}>
+                <Text style={styles.customTimerButtonText}>Benutzerdefiniert starten</Text>
+              </TouchableOpacity>
+            </View>
           </ScrollView>
         )}
 
@@ -432,15 +611,32 @@ export default function App() {
                     <Text style={styles.vehicleName}>{vehicle.name}</Text>
                     <Text style={styles.vehicleType}>{vehicle.type}</Text>
                   </View>
-                  <TouchableOpacity onPress={() => setSelectedVehicleId(vehicle.id)}>
-                    <Text style={styles.linkText}>{selectedVehicleId === vehicle.id ? "Aktiv" : "Auswählen"}</Text>
-                  </TouchableOpacity>
+                  <View style={styles.vehicleActions}>
+                    <TouchableOpacity onPress={() => setSelectedVehicleId(vehicle.id)}>
+                      <Text style={styles.linkText}>{selectedVehicleId === vehicle.id ? "Aktiv" : "Auswählen"}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => deleteVehicle(vehicle.id)}>
+                      <Text style={styles.deleteText}>Löschen</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               ))}
             </View>
           </ScrollView>
         )}
       </View>
+
+      <Modal visible={isPhotoVisible} animationType="slide" transparent onRequestClose={() => setIsPhotoVisible(false)}>
+        <View style={styles.photoModalBackdrop}>
+          <View style={styles.photoModal}>
+            <Text style={styles.photoModalTitle}>Parkplatzfoto</Text>
+            {parkingSpot?.photoUri && <Image source={{ uri: parkingSpot.photoUri }} style={styles.photoPreview} />}
+            <TouchableOpacity style={styles.primaryButton} onPress={() => setIsPhotoVisible(false)}>
+              <Text style={styles.primaryButtonText}>Schliessen</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -475,18 +671,18 @@ function TabButton({ label, isActive, onPress }: TabButtonProps) {
 }
 
 type CarPinMapProps = {
+  currentLocation: Coordinate | null;
+  isLocating: boolean;
+  onRefreshLocation: () => void;
   parkingSpot: ParkingSpot | null;
   region: Region;
 };
 
-function CarPinMap({ parkingSpot, region }: CarPinMapProps) {
-  const userCoordinate = {
-    latitude: region.latitude - 0.0016,
-    longitude: region.longitude - 0.0014
-  };
+function CarPinMap({ currentLocation, isLocating, onRefreshLocation, parkingSpot, region }: CarPinMapProps) {
   const parkingCoordinate = parkingSpot
     ? { latitude: parkingSpot.latitude, longitude: parkingSpot.longitude }
     : null;
+  const routeCoordinates = currentLocation && parkingCoordinate ? [currentLocation, parkingCoordinate] : [];
 
   return (
     <View style={styles.mapCard}>
@@ -499,15 +695,19 @@ function CarPinMap({ parkingSpot, region }: CarPinMapProps) {
         showsMyLocationButton={false}
         showsPointsOfInterest={false}
       >
-        <Marker coordinate={userCoordinate} title="Dein Standort">
-          <View style={styles.userMarker}>
-            <View style={styles.userMarkerInner} />
-          </View>
-        </Marker>
+        {currentLocation && (
+          <Marker coordinate={currentLocation} title="Dein Standort">
+            <View style={styles.userMarker}>
+              <View style={styles.userMarkerInner} />
+            </View>
+          </Marker>
+        )}
 
         {parkingCoordinate && (
           <>
-            <Polyline coordinates={[userCoordinate, parkingCoordinate]} strokeColor="#20c8f4" strokeWidth={5} />
+            {routeCoordinates.length === 2 && (
+              <Polyline coordinates={routeCoordinates} strokeColor="#20c8f4" strokeWidth={5} />
+            )}
             <Marker coordinate={parkingCoordinate} title="Parkplatz">
               <View style={styles.parkingMarker}>
                 <Text style={styles.parkingMarkerText}>P</Text>
@@ -520,9 +720,13 @@ function CarPinMap({ parkingSpot, region }: CarPinMapProps) {
       <View style={styles.mapOverlayLabel}>
         <Text style={styles.mapOverlayEyebrow}>Kartenansicht</Text>
         <Text style={styles.mapOverlayText}>
-          {parkingSpot ? parkingSpot.address || "Parkplatz gespeichert" : "Zürich"}
+          {parkingSpot?.address || (currentLocation ? "Aktueller Standort" : "Standort wird gesucht")}
         </Text>
       </View>
+
+      <TouchableOpacity style={styles.locationButton} onPress={onRefreshLocation} disabled={isLocating}>
+        <Text style={styles.locationButtonText}>{isLocating ? "..." : "Standort"}</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -619,6 +823,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     left: 16,
+    maxWidth: 245,
     paddingHorizontal: 14,
     paddingVertical: 11,
     position: "absolute",
@@ -635,6 +840,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "900",
     marginTop: 3
+  },
+  locationButton: {
+    alignItems: "center",
+    backgroundColor: "rgba(17, 17, 29, 0.92)",
+    borderColor: "#242439",
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    position: "absolute",
+    right: 16,
+    top: 18
+  },
+  locationButtonText: {
+    color: "#20c8f4",
+    fontSize: 12,
+    fontWeight: "900"
   },
   userMarker: {
     alignItems: "center",
@@ -698,6 +920,9 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 14
   },
+  lastSavedContent: {
+    flex: 1
+  },
   pinBadge: {
     alignItems: "center",
     backgroundColor: "#073f59",
@@ -756,12 +981,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#20c8f4",
     borderRadius: 14,
-    flex: 1.2,
+    flex: 1.25,
     paddingVertical: 14
   },
   primaryButtonText: {
     color: "#071018",
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "900"
   },
   savedCard: {
@@ -809,15 +1034,10 @@ const styles = StyleSheet.create({
   },
   metricValue: {
     color: "#ffffff",
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "900",
-    marginTop: 3
-  },
-  parkingPhoto: {
-    borderRadius: 16,
-    height: 130,
-    marginTop: 12,
-    width: "100%"
+    marginTop: 3,
+    textAlign: "center"
   },
   actionRow: {
     flexDirection: "row",
@@ -830,11 +1050,25 @@ const styles = StyleSheet.create({
     borderColor: "#28283c",
     borderRadius: 14,
     borderWidth: 1,
-    flex: 0.9,
+    flex: 0.85,
     paddingVertical: 14
   },
   darkButtonText: {
     color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  timerShortcut: {
+    alignItems: "center",
+    backgroundColor: "#0e3448",
+    borderColor: "#176783",
+    borderRadius: 14,
+    borderWidth: 1,
+    marginTop: 12,
+    paddingVertical: 13
+  },
+  timerShortcutText: {
+    color: "#20c8f4",
     fontSize: 13,
     fontWeight: "900"
   },
@@ -880,7 +1114,7 @@ const styles = StyleSheet.create({
   },
   timerValue: {
     color: "#ffffff",
-    fontSize: 42,
+    fontSize: 34,
     fontWeight: "900",
     marginTop: 2
   },
@@ -889,26 +1123,37 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900"
   },
-  timerInfo: {
-    alignSelf: "center",
-    backgroundColor: "#0e3448",
-    borderColor: "#176783",
-    borderRadius: 999,
+  assignmentCard: {
+    backgroundColor: "#151523",
+    borderColor: "#242439",
+    borderRadius: 18,
     borderWidth: 1,
     marginTop: 28,
-    paddingHorizontal: 16,
-    paddingVertical: 9
+    padding: 16
   },
-  timerInfoText: {
-    color: "#b8d7e5",
-    fontSize: 12,
-    fontWeight: "800"
+  assignmentLabel: {
+    color: "#20c8f4",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  assignmentTitle: {
+    color: "#ffffff",
+    fontSize: 17,
+    fontWeight: "900",
+    marginTop: 8
+  },
+  assignmentMeta: {
+    color: "#9aa8b6",
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 6
   },
   sectionLabel: {
     color: "#777589",
     fontSize: 12,
     fontWeight: "900",
-    marginTop: 30,
+    marginTop: 24,
     textTransform: "uppercase"
   },
   timeButtons: {
@@ -938,6 +1183,37 @@ const styles = StyleSheet.create({
     color: "#071018",
     fontSize: 14,
     fontWeight: "900"
+  },
+  customTimerRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 12
+  },
+  timerInput: {
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 14,
+    borderWidth: 1,
+    color: "#ffffff",
+    flex: 0.55,
+    fontSize: 15,
+    fontWeight: "900",
+    paddingHorizontal: 14,
+    paddingVertical: 13
+  },
+  customTimerButton: {
+    alignItems: "center",
+    backgroundColor: "#20c8f4",
+    borderRadius: 14,
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 12
+  },
+  customTimerButtonText: {
+    color: "#071018",
+    fontSize: 13,
+    fontWeight: "900",
+    textAlign: "center"
   },
   panel: {
     backgroundColor: "#151523",
@@ -997,6 +1273,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 13
   },
+  vehicleActions: {
+    alignItems: "flex-end",
+    gap: 8
+  },
   vehicleName: {
     color: "#ffffff",
     fontSize: 16,
@@ -1011,5 +1291,35 @@ const styles = StyleSheet.create({
     color: "#20c8f4",
     fontSize: 14,
     fontWeight: "900"
+  },
+  deleteText: {
+    color: "#ff6b6b",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  photoModalBackdrop: {
+    backgroundColor: "rgba(0, 0, 0, 0.74)",
+    flex: 1,
+    justifyContent: "flex-end"
+  },
+  photoModal: {
+    backgroundColor: "#11111d",
+    borderColor: "#242439",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
+    padding: 16,
+    paddingBottom: 28
+  },
+  photoModalTitle: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+    marginBottom: 14
+  },
+  photoPreview: {
+    aspectRatio: 1.1,
+    borderRadius: 18,
+    width: "100%"
   }
 });

@@ -21,9 +21,12 @@ Danach den QR-Code mit Expo Go auf dem iPhone scannen. Alternativ kann auf einem
 - Fahrzeugliste mit lokal gespeicherten Fahrzeugen
 - Lokale Persistenz ueber AsyncStorage
 
+## Entwicklung
+
+Eine uebersichtliche Zusammenfassung der Feature-Branches und Commits steht in [`docs/commit-overview.md`](docs/commit-overview.md).
+
 ## Noch offen
 
-- echte Kartenansicht mit eingezeichneter Route
 - Push-Notification vor Ablauf der Parkzeit
-- schoenere Detailansicht fuer Fotos und Parkplatzhistorie
+- echte Gehroute mit Distanzberechnung statt einfacher Kartenlinie
 - Tests und Testprotokoll gemaess Projektdokumentation
