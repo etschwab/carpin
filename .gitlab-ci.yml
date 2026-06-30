@@ -1,7 +1,13 @@
-image: node:22
+image: node:20-bookworm
 
 stages:
   - validate
+
+variables:
+  CI: "true"
+  EXPO_NO_TELEMETRY: "1"
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
+  NPM_CONFIG_PROGRESS: "false"
 
 cache:
   key:
@@ -12,10 +18,13 @@ cache:
 
 validate:
   stage: validate
+  before_script:
+    - node --version
+    - npm --version
   script:
-    - npm ci --cache .npm --prefer-offline --no-audit
-    - npx expo install --check
+    - npm ci --prefer-offline --no-audit
     - npm run typecheck
+    - npx expo export --platform ios --output-dir dist --clear
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
