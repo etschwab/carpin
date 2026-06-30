@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "CarPin",
+    "slug": "carpin",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./carpin.png",
+    "scheme": "carpin",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./carpin.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f7f2ea"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ch.ictlearnfactory.carpin",
+      "infoPlist": {
+        "NSCameraUsageDescription": "CarPin nutzt die Kamera, damit du ein Foto deines Parkplatzes speichern kannst.",
+        "NSPhotoLibraryUsageDescription": "CarPin nutzt die Galerie, damit du ein bestehendes Parkplatzfoto auswaehlen kannst.",
+        "NSLocationWhenInUseUsageDescription": "CarPin nutzt deinen Standort, um den Parkplatz deines Fahrzeugs zu speichern."
+      }
+    },
+    "plugins": [
+      "expo-location",
+      "expo-image-picker"
+    ]
+  }
+}

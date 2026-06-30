@@ -1,0 +1,10 @@
+node_modules/
+.expo/
+.agents/
+.codex/
+dist/
+npm-debug.*
+*.log
+.DS_Store
+ios/
+android/
