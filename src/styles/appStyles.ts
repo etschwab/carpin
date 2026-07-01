@@ -159,7 +159,7 @@ export const styles = StyleSheet.create({
     right: 0
   },
   sheetHandleArea: {
-    marginBottom: 12
+    marginBottom: 8
   },
   handleTapTarget: {
     alignItems: "center",
@@ -171,7 +171,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#414154",
     borderRadius: 2,
     height: 4,
-    marginBottom: 7,
+    marginBottom: 5,
     width: 38
   },
   sheetHint: {
@@ -181,6 +181,13 @@ export const styles = StyleSheet.create({
   },
   fullSheetContent: {
     paddingBottom: 26
+  },
+  sheetContentStage: {
+    flex: 1,
+    position: "relative"
+  },
+  sheetContentLayer: {
+    ...StyleSheet.absoluteFillObject
   },
   fullHeaderCard: {
     alignItems: "center",
@@ -268,7 +275,9 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
-    padding: 14
+    minHeight: 72,
+    paddingHorizontal: 14,
+    paddingVertical: 10
   },
   lastSavedContent: {
     flex: 1
@@ -298,8 +307,14 @@ export const styles = StyleSheet.create({
     marginTop: 4
   },
   vehicleStrip: {
+    alignItems: "flex-start",
     gap: 8,
-    marginTop: 14
+    marginTop: 10
+  },
+  vehicleSelectorScroll: {
+    flexGrow: 0,
+    height: 96,
+    maxHeight: 96
   },
   vehiclePill: {
     backgroundColor: "#1b1b2d",
@@ -316,16 +331,18 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#1b1b2d",
     borderColor: "#28283c",
-    borderRadius: 14,
+    borderRadius: 13,
     borderWidth: 1,
     flexDirection: "column",
-    marginHorizontal: 5,
-    minWidth: 100,
-    paddingHorizontal: 12,
-    paddingVertical: 12
+    height: 86,
+    justifyContent: "center",
+    marginHorizontal: 4,
+    minWidth: 82,
+    paddingHorizontal: 9,
+    paddingVertical: 8
   },
   vehicleIcon: {
-    marginTop: 8
+    marginTop: 5
   },
   vehiclePillText: {
     color: "#b7b5c8",
@@ -341,6 +358,13 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     marginTop: 14,
     paddingVertical: 16
+  },
+  midSaveButton: {
+    marginTop: 20
+  },
+  compactSheetButton: {
+    marginTop: 0,
+    paddingVertical: 13
   },
   formActions: {
     gap: 10,

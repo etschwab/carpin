@@ -58,7 +58,7 @@ export function VehiclesScreen({
         <View style={styles.formActions}>
           <TouchableOpacity style={styles.primaryButton} onPress={onSubmitVehicleForm}>
             <Text style={styles.primaryButtonText}>
-              {editingVehicleId ? "Aenderungen speichern" : "Fahrzeug hinzufuegen"}
+              {editingVehicleId ? "Änderungen speichern" : "Fahrzeug hinzufügen"}
             </Text>
           </TouchableOpacity>
           {editingVehicleId && (
@@ -79,13 +79,13 @@ export function VehiclesScreen({
             </View>
             <View style={styles.vehicleActions}>
               <TouchableOpacity onPress={() => onSelectVehicle(vehicle.id)}>
-                <Text style={styles.linkText}>{selectedVehicleId === vehicle.id ? "Aktiv" : "Auswaehlen"}</Text>
+                <Text style={styles.linkText}>{selectedVehicleId === vehicle.id ? "Aktiv" : "Auswählen"}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => onStartEditingVehicle(vehicle)}>
                 <Text style={styles.linkText}>Bearbeiten</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => onDeleteVehicle(vehicle.id)}>
-                <Text style={styles.deleteText}>Loeschen</Text>
+                <Text style={styles.deleteText}>Löschen</Text>
               </TouchableOpacity>
             </View>
           </View>
