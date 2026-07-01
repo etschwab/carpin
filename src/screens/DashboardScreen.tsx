@@ -1,5 +1,7 @@
-import { Animated, GestureResponderHandlers, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Animated, GestureResponderHandlers, ScrollView, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import type { Region } from "react-native-maps";
+// Icons für die Fahrzeug-Auswahl importieren
+import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { CarPinMap } from "../components/CarPinMap";
 import { FullInfoTile } from "../components/FullInfoTile";
@@ -112,7 +114,11 @@ export function DashboardScreen({
 
             <View style={styles.fullIconGrid}>
               <FullInfoTile icon="⌖" label="Standort" value={coordinateLabel} />
-              <FullInfoTile icon="A" label="Fahrzeug" value={selectedVehicle?.name ?? "Kein Fahrzeug"} />
+              <FullInfoTile 
+                icon={selectedVehicle?.type || selectedVehicle?.name || "auto"} 
+                label="Fahrzeug" 
+                value={selectedVehicle?.name ?? "Kein Fahrzeug"} 
+              />
               <FullInfoTile
                 icon="⏱"
                 label="Timer"
@@ -210,17 +216,62 @@ export function DashboardScreen({
             </View>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.vehicleStrip}>
-              {vehicles.map((vehicle) => (
-                <TouchableOpacity
-                  key={vehicle.id}
-                  style={[styles.vehiclePill, selectedVehicleId === vehicle.id && styles.vehiclePillActive]}
-                  onPress={() => onSelectVehicle(vehicle.id)}
-                >
-                  <Text style={[styles.vehiclePillText, selectedVehicleId === vehicle.id && styles.vehiclePillTextActive]}>
-                    {vehicle.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {vehicles.map((vehicle) => {
+                const checkName = (vehicle.type || vehicle.name || "").toLowerCase().trim();
+                let iconName: string = "car";
+                let IconComponent: any = FontAwesome5;
+
+                if (checkName.includes("velo") || checkName.includes("bicycle") || checkName.includes("fahrrad")) {
+                  iconName = "bicycle";
+                  IconComponent = FontAwesome5;
+                } else if (checkName.includes("scooter") || checkName.includes("trottinett") || checkName.includes("roller")) {
+                  iconName = "scooter";
+                  IconComponent = MaterialCommunityIcons;
+                } else if (checkName.includes("motorrad") || checkName.includes("moto") || checkName.includes("motorcycle")) {
+                  iconName = "motorcycle";
+                  IconComponent = FontAwesome5;
+                } else {
+                  iconName = "car";
+                  IconComponent = FontAwesome5;
+                }
+
+                const isActive = selectedVehicleId === vehicle.id;
+
+                // Wir lesen den Eckenradius eurer eckigen Karten aus, um ihn exakt zu kopieren
+                const targetRadius = StyleSheet.flatten(styles.lastSavedCard)?.borderRadius || 12;
+
+                return (
+                  <TouchableOpacity
+                    key={vehicle.id}
+                    style={[
+                      styles.vehiclePill,
+                      isActive && styles.vehiclePillActive, // Nutzt euer originales aktives Blau
+                      { 
+                        flexDirection: 'column', 
+                        alignItems: 'center', 
+                        paddingVertical: 12, 
+                        minWidth: 100,
+                        marginHorizontal: 5,
+                        borderRadius: targetRadius // Macht die Ecken genau so eckig wie bei der lastSavedCard
+                      }
+                    ]}
+                    onPress={() => onSelectVehicle(vehicle.id)}
+                  >
+                    {/* Fahrzeugname */}
+                    <Text style={[styles.vehiclePillText, isActive && styles.vehiclePillTextActive]}>
+                      {vehicle.name}
+                    </Text>
+                    
+                    {/* Grosses Icon mit der exakten Textfarbe */}
+                    <IconComponent
+                      name={iconName}
+                      size={26}
+                      color={isActive ? (StyleSheet.flatten(styles.vehiclePillTextActive)?.color || "#00E5FF") : (StyleSheet.flatten(styles.vehiclePillText)?.color || "#71717A")}
+                      style={{ marginTop: 8 }}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
 
             <TouchableOpacity style={styles.primaryButton} onPress={onSaveParkingSpot} disabled={isSavingSpot}>
