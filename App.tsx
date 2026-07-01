@@ -1,14 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
+import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Animated, Linking, PanResponder, SafeAreaView, Share, View } from "react-native";
+import { Alert, Animated, Linking, PanResponder, Platform, SafeAreaView, Share, View } from "react-native";
 import type { Region } from "react-native-maps";
 
 import { Header } from "./src/components/Header";
 import { TabButton } from "./src/components/TabButton";
-import { DEFAULT_VEHICLES, FALLBACK_COORDINATE, SHEET_HEIGHTS, STORAGE_KEYS } from "./src/constants/appConstants";
+import { DEFAULT_VEHICLES, FALLBACK_COORDINATE, SHEET_HEIGHTS, STORAGE_KEYS, TIMER_REMINDER_MINUTES } from "./src/constants/appConstants";
 import { DashboardScreen } from "./src/screens/DashboardScreen";
 import { PhotoModal } from "./src/screens/PhotoModal";
 import { TimerScreen } from "./src/screens/TimerScreen";
@@ -17,6 +18,15 @@ import { styles } from "./src/styles/appStyles";
 import type { Coordinate, ParkingSpot, PhotoSource, Screen, SheetMode, Vehicle, VehicleType } from "./src/types/parking";
 import { reverseGeocode } from "./src/utils/location";
 import { parseMinutes } from "./src/utils/time";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true
+  })
+});
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
@@ -36,8 +46,10 @@ export default function App() {
   const [isSavingSpot, setIsSavingSpot] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isPhotoVisible, setIsPhotoVisible] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [sheetMode, setSheetMode] = useState<SheetMode>("mid");
   const sheetHeight = useRef(new Animated.Value(SHEET_HEIGHTS.mid)).current;
+  const hasShownNotificationAlertRef = useRef(false);
 
   useEffect(() => {
     async function loadState() {
@@ -71,10 +83,13 @@ export default function App() {
       if (storedTimerSpotId) {
         setTimerSpotId(storedTimerSpotId);
       }
+
+      setIsHydrated(true);
     }
 
     loadState().catch(() => {
       Alert.alert("Speicherfehler", "Die lokalen Daten konnten nicht gelesen werden.");
+      setIsHydrated(true);
     });
     refreshCurrentLocation(true).catch(() => undefined);
   }, []);
@@ -134,6 +149,10 @@ export default function App() {
     () => vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ?? vehicles[0],
     [selectedVehicleId, vehicles]
   );
+  const parkedVehicle = useMemo(
+    () => vehicles.find((vehicle) => vehicle.id === parkingSpot?.vehicleId),
+    [parkingSpot?.vehicleId, vehicles]
+  );
 
   const timerSpotMatchesActiveSpot = Boolean(parkingSpot && timerSpotId === parkingSpot.id);
   const remainingMs = timerEnd ? new Date(timerEnd).getTime() - now : 0;
@@ -168,6 +187,98 @@ export default function App() {
       }),
     []
   );
+
+  useEffect(() => {
+    async function syncTimerNotifications() {
+      if (!isHydrated) {
+        return;
+      }
+
+      await Notifications.cancelAllScheduledNotificationsAsync();
+
+      if (!timerEnd || !parkingSpot || timerSpotId !== parkingSpot.id) {
+        return;
+      }
+
+      const endDate = new Date(timerEnd);
+      const endTimestamp = endDate.getTime();
+
+      if (Number.isNaN(endTimestamp) || endTimestamp <= Date.now()) {
+        return;
+      }
+
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("parking-timer", {
+          name: "Parking timer",
+          importance: Notifications.AndroidImportance.HIGH
+        });
+      }
+
+      const permissionStatus = await Notifications.getPermissionsAsync();
+      let finalStatus = permissionStatus.status;
+
+      if (finalStatus !== "granted") {
+        const requestedPermission = await Notifications.requestPermissionsAsync();
+        finalStatus = requestedPermission.status;
+      }
+
+      if (finalStatus !== "granted") {
+        if (!hasShownNotificationAlertRef.current) {
+          hasShownNotificationAlertRef.current = true;
+          Alert.alert(
+            "Mitteilungen deaktiviert",
+            "Aktiviere Mitteilungen fuer CarPin, damit du 1 Stunde, 30 Minuten, 10 Minuten, 5 Minuten und beim Ablauf erinnert wirst."
+          );
+        }
+        return;
+      }
+
+      hasShownNotificationAlertRef.current = false;
+
+      const vehicleLabel = parkedVehicle?.name ?? "Dein Fahrzeug";
+      const locationLabel = parkingSpot.address || parkingSpot.description || "deinem Parkplatz";
+
+      for (const reminderMinute of TIMER_REMINDER_MINUTES) {
+        const triggerDate = new Date(endTimestamp - reminderMinute * 60 * 1000);
+        if (triggerDate.getTime() <= Date.now()) {
+          continue;
+        }
+
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Parktimer endet bald",
+            body: `${vehicleLabel} steht noch ${reminderMinute} Minuten bei ${locationLabel}.`,
+            sound: true
+          },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.DATE,
+            date: triggerDate,
+            ...(Platform.OS === "android" ? { channelId: "parking-timer" } : {})
+          }
+        });
+      }
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Parkzeit abgelaufen",
+          body: `${vehicleLabel} steht noch bei ${locationLabel}.`,
+          sound: true
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: endDate,
+          ...(Platform.OS === "android" ? { channelId: "parking-timer" } : {})
+        }
+      });
+    }
+
+    syncTimerNotifications().catch(() => {
+      if (!hasShownNotificationAlertRef.current) {
+        hasShownNotificationAlertRef.current = true;
+        Alert.alert("Reminder-Fehler", "Die Timer-Erinnerungen konnten nicht eingerichtet werden.");
+      }
+    });
+  }, [isHydrated, parkedVehicle?.name, parkingSpot, timerEnd, timerSpotId]);
 
   async function getDeviceLocation(showErrors: boolean) {
     setIsLocating(true);
