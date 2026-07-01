@@ -25,6 +25,7 @@ type DashboardScreenProps = {
   onRefreshCurrentLocation: () => void;
   onSaveParkingSpot: () => void;
   onSelectVehicle: (vehicleId: string) => void;
+  onShareParking: () => void;
   onShowPhoto: () => void;
   onToggleSheetMode: () => void;
   parkingDescription: string;
@@ -96,6 +97,7 @@ export function DashboardScreen({
   onRefreshCurrentLocation,
   onSaveParkingSpot,
   onSelectVehicle,
+  onShareParking,
   onShowPhoto,
   onToggleSheetMode,
   parkingDescription,
@@ -193,6 +195,9 @@ export function DashboardScreen({
                   <TouchableOpacity style={styles.timerShortcut} onPress={onOpenTimer}>
                     <Text style={styles.timerShortcutText}>Parktimer fuer diesen Parkplatz setzen</Text>
                   </TouchableOpacity>
+                  <TouchableOpacity style={styles.timerShortcut} onPress={onShareParking}>
+                    <Text style={styles.timerShortcutText}>Parking teilen</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity style={styles.endParkingButton} onPress={onClearParkingSpot}>
                     <Text style={styles.endParkingButtonText}>Parking beenden</Text>
                   </TouchableOpacity>
@@ -247,6 +252,10 @@ export function DashboardScreen({
 
             <TouchableOpacity style={styles.timerShortcut} onPress={onOpenTimer}>
               <Text style={styles.timerShortcutText}>Parktimer fuer diesen Parkplatz setzen</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.timerShortcut} onPress={onShareParking}>
+              <Text style={styles.timerShortcutText}>Parking teilen</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.endParkingButton} onPress={onClearParkingSpot}>
