@@ -5,25 +5,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#080911"
   },
-  parkingMarker: {
-    // Hier sind deine bestehenden Styles für den äußeren Kreis
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(32, 200, 244, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  parkingMarkerInner: {
-    // Füge dies hinzu!
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#20c8f4',
-  },
-  
-  
-
   appShell: {
     flex: 1,
     backgroundColor: "#0d0d19",
@@ -157,6 +138,12 @@ export const styles = StyleSheet.create({
     height: 36,
     justifyContent: "center",
     width: 36
+  },
+  parkingMarkerInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#20c8f4'
   },
   parkingMarkerText: {
     color: "#071018",
@@ -839,4 +826,3 @@ export const styles = StyleSheet.create({
     paddingVertical: 13
   }
 });
-
