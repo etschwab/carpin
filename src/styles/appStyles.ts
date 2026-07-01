@@ -511,26 +511,37 @@ export const styles = StyleSheet.create({
   content: {
     paddingBottom: 28
   },
+  timerKeyboardView: {
+    flex: 1
+  },
+  timerContent: {
+    flexGrow: 1,
+    paddingBottom: 150
+  },
+  timerHero: {
+    alignItems: "center",
+    paddingTop: 18
+  },
   timerRing: {
     alignItems: "center",
     alignSelf: "center",
-    borderColor: "#1d1d2b",
-    borderRadius: 82,
-    borderWidth: 8,
-    height: 164,
+    height: 236,
     justifyContent: "center",
-    marginTop: 26,
-    width: 164
+    width: 236
   },
-  timerArc: {
-    borderColor: "#20c8f4",
-    borderRadius: 82,
-    borderRightWidth: 8,
-    borderTopWidth: 8,
-    height: 164,
-    position: "absolute",
-    transform: [{ rotate: "20deg" }],
-    width: 164
+  timerRingSvg: {
+    position: "absolute"
+  },
+  timerRingCenter: {
+    alignItems: "center",
+    backgroundColor: "#11111d",
+    borderColor: "#25253a",
+    borderRadius: 86,
+    borderWidth: 1,
+    height: 172,
+    justifyContent: "center",
+    paddingHorizontal: 18,
+    width: 172
   },
   timerLabel: {
     color: "#777589",
@@ -540,14 +551,16 @@ export const styles = StyleSheet.create({
   },
   timerValue: {
     color: "#ffffff",
-    fontSize: 34,
+    fontSize: 35,
     fontWeight: "900",
     marginTop: 2
   },
   timerUnit: {
     color: "#20c8f4",
     fontSize: 12,
-    fontWeight: "900"
+    fontWeight: "900",
+    marginTop: 4,
+    textAlign: "center"
   },
   assignmentCard: {
     backgroundColor: "#151523",
@@ -610,36 +623,145 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "900"
   },
-  customTimerRow: {
+  customTimerOpenButton: {
+    alignItems: "center",
+    backgroundColor: "#151523",
+    borderColor: "#242439",
+    borderRadius: 16,
+    borderWidth: 1,
     flexDirection: "row",
-    gap: 10,
-    marginTop: 12
+    gap: 12,
+    justifyContent: "space-between",
+    marginTop: 14,
+    padding: 15
   },
-  timerInput: {
+  customTimerOpenTextWrap: {
+    flex: 1
+  },
+  customTimerOpenLabel: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "900"
+  },
+  customTimerOpenMeta: {
+    color: "#8f8da0",
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 17,
+    marginTop: 3
+  },
+  customTimerOpenIcon: {
+    color: "#20c8f4",
+    fontSize: 24,
+    fontWeight: "700"
+  },
+  customTimerModalBackdrop: {
+    backgroundColor: "rgba(0, 0, 0, 0.64)",
+    flex: 1,
+    justifyContent: "flex-end"
+  },
+  customTimerModal: {
+    backgroundColor: "#11111d",
+    borderColor: "#242439",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
+    padding: 16,
+    paddingBottom: 28
+  },
+  customTimerModalHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between"
+  },
+  customTimerModalTitle: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900"
+  },
+  customTimerModalMeta: {
+    color: "#8f8da0",
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 5
+  },
+  modalCloseButton: {
+    alignItems: "center",
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 15,
+    borderWidth: 1,
+    height: 34,
+    justifyContent: "center",
+    width: 34
+  },
+  modalCloseButtonText: {
+    color: "#ffffff",
+    fontSize: 22,
+    lineHeight: 24
+  },
+  timerModeTabs: {
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 14,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 5,
+    marginTop: 18,
+    padding: 5
+  },
+  timerModeTab: {
+    alignItems: "center",
+    borderRadius: 10,
+    flex: 1,
+    paddingVertical: 11
+  },
+  timerModeTabActive: {
+    backgroundColor: "#20c8f4"
+  },
+  timerModeTabText: {
+    color: "#b7b5c8",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  timerModeTabTextActive: {
+    color: "#071018",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  customTimerFieldGroup: {
+    marginTop: 18
+  },
+  customTimerFieldLabel: {
+    color: "#777589",
+    fontSize: 12,
+    fontWeight: "900",
+    marginBottom: 8,
+    textTransform: "uppercase"
+  },
+  customTimerModalInput: {
     backgroundColor: "#1b1b2d",
     borderColor: "#28283c",
     borderRadius: 14,
     borderWidth: 1,
     color: "#ffffff",
-    flex: 0.55,
-    fontSize: 15,
+    fontSize: 24,
     fontWeight: "900",
     paddingHorizontal: 14,
-    paddingVertical: 13
+    paddingVertical: 14
   },
-  customTimerButton: {
+  customTimerSubmitButton: {
     alignItems: "center",
     backgroundColor: "#20c8f4",
-    borderRadius: 14,
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 12
+    borderRadius: 15,
+    marginTop: 18,
+    paddingVertical: 15
   },
-  customTimerButtonText: {
+  customTimerSubmitButtonText: {
     color: "#071018",
-    fontSize: 13,
-    fontWeight: "900",
-    textAlign: "center"
+    fontSize: 14,
+    fontWeight: "900"
   },
   panel: {
     backgroundColor: "#151523",
