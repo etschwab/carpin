@@ -138,12 +138,15 @@ export default function App() {
   const remainingMs = timerEnd ? new Date(timerEnd).getTime() - now : 0;
   const timerIsActive = Boolean(timerEnd && remainingMs > 0);
   const activeMapCoordinate = parkingSpot ?? currentLocation ?? FALLBACK_COORDINATE;
-  const mapRegion: Region = {
-    latitude: activeMapCoordinate.latitude,
-    longitude: activeMapCoordinate.longitude,
-    latitudeDelta: parkingSpot ? 0.006 : 0.012,
-    longitudeDelta: parkingSpot ? 0.006 : 0.012
-  };
+  const mapRegion = useMemo<Region>(
+    () => ({
+      latitude: activeMapCoordinate.latitude,
+      longitude: activeMapCoordinate.longitude,
+      latitudeDelta: parkingSpot ? 0.006 : 0.012,
+      longitudeDelta: parkingSpot ? 0.006 : 0.012
+    }),
+    [activeMapCoordinate.latitude, activeMapCoordinate.longitude, parkingSpot]
+  );
   const currentAddressLabel = parkingSpot?.address || (currentLocation ? "Aktueller Standort" : "Standort wird gesucht");
   const coordinateLabel = `${activeMapCoordinate.latitude.toFixed(5)}, ${activeMapCoordinate.longitude.toFixed(5)}`;
   const bottomSheetAnimatedStyle = { height: sheetHeight };

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, Polyline, Region } from "react-native-maps";
 
@@ -8,21 +9,47 @@ import type { Coordinate, ParkingSpot } from "../types/parking";
 type CarPinMapProps = {
   currentLocation: Coordinate | null;
   isLocating: boolean;
-  onRefreshLocation: () => void;
+  onRefreshLocation: () => Promise<Coordinate | null>;
   parkingSpot: ParkingSpot | null;
   region: Region;
 };
 
 export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, parkingSpot, region }: CarPinMapProps) {
+  const mapRef = useRef<MapView | null>(null);
   const parkingCoordinate = parkingSpot ? { latitude: parkingSpot.latitude, longitude: parkingSpot.longitude } : null;
   const routeCoordinates = currentLocation && parkingCoordinate ? [currentLocation, parkingCoordinate] : [];
+
+  useEffect(() => {
+    mapRef.current?.animateToRegion(region, 350);
+  }, [region.latitude, region.longitude, region.latitudeDelta, region.longitudeDelta]);
+
+  function centerMap(coordinate: Coordinate) {
+    mapRef.current?.animateToRegion(
+      {
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude,
+        latitudeDelta: 0.012,
+        longitudeDelta: 0.012
+      },
+      350
+    );
+  }
+
+  async function recenterCurrentLocation() {
+    const refreshedLocation = await onRefreshLocation();
+    const targetLocation = refreshedLocation ?? currentLocation;
+
+    if (targetLocation) {
+      centerMap(targetLocation);
+    }
+  }
 
   return (
     <View style={styles.mapCard}>
       <MapView
+        ref={mapRef}
         style={styles.realMap}
         initialRegion={region}
-        region={region}
         customMapStyle={MAP_DARK_STYLE}
         showsCompass={false}
         showsMyLocationButton={false}
@@ -55,7 +82,7 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
         </Text>
       </View>
 
-      <TouchableOpacity style={styles.locationButton} onPress={onRefreshLocation} disabled={isLocating}>
+      <TouchableOpacity style={styles.locationButton} onPress={recenterCurrentLocation} disabled={isLocating}>
         <Text style={styles.locationButtonText}>{isLocating ? "..." : "Standort"}</Text>
       </TouchableOpacity>
     </View>
