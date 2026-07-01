@@ -380,6 +380,12 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 5
   },
+  parkingDescriptionText: {
+    color: "#d8e7f1",
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 10
+  },
   metricsRow: {
     flexDirection: "row",
     gap: 10,
@@ -619,6 +625,12 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     paddingHorizontal: 14,
     paddingVertical: 13
+  },
+  parkingDescriptionInput: {
+    marginTop: 12,
+    minHeight: 92,
+    paddingTop: 13,
+    textAlignVertical: "top"
   },
   typeRow: {
     flexDirection: "row",

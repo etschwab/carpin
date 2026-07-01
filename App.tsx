@@ -24,6 +24,7 @@ export default function App() {
   const [selectedVehicleId, setSelectedVehicleId] = useState(DEFAULT_VEHICLES[0].id);
   const [parkingSpot, setParkingSpot] = useState<ParkingSpot | null>(null);
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
+  const [parkingDescription, setParkingDescription] = useState("");
   const [newVehicleName, setNewVehicleName] = useState("");
   const [newVehicleType, setNewVehicleType] = useState<VehicleType>("Auto");
   const [editingVehicleId, setEditingVehicleId] = useState<string | null>(null);
@@ -224,9 +225,11 @@ export default function App() {
         latitude: coordinate.latitude,
         longitude: coordinate.longitude,
         address: address || "Gespeicherter Parkplatz",
+        description: parkingDescription.trim() || undefined,
         savedAt: new Date().toISOString()
       });
 
+      setParkingDescription("");
       Alert.alert("Parkplatz gespeichert", "Dein aktueller Standort wurde in der Karte gespeichert.");
     } catch {
       Alert.alert("Fehler", "Der Parkplatz konnte nicht gespeichert werden.");
@@ -306,6 +309,7 @@ export default function App() {
 
     setParkingSpot(null);
     setIsPhotoVisible(false);
+    setParkingDescription("");
   }
 
   function toggleSheetMode() {
@@ -423,6 +427,7 @@ export default function App() {
             isLocating={isLocating}
             isSavingSpot={isSavingSpot}
             mapRegion={mapRegion}
+            onChangeParkingDescription={setParkingDescription}
             onClearParkingSpot={clearParkingSpot}
             onOpenRoute={openRoute}
             onOpenTimer={() => setScreen("timer")}
@@ -432,6 +437,7 @@ export default function App() {
             onSelectVehicle={setSelectedVehicleId}
             onShowPhoto={() => setIsPhotoVisible(true)}
             onToggleSheetMode={toggleSheetMode}
+            parkingDescription={parkingDescription}
             parkingSpot={parkingSpot}
             remainingMs={remainingMs}
             selectedVehicle={selectedVehicle}
