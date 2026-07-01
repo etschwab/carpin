@@ -16,6 +16,7 @@ export type ParkingSpot = Coordinate & {
   vehicleId: string;
   savedAt: string;
   address?: string;
+  description?: string;
   photoUri?: string;
 };
 
