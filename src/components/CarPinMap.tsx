@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Platform, Linking, StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import MapView, { Marker, Polyline, Region } from "react-native-maps";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { MAP_DARK_STYLE } from "../constants/appConstants";
 import { styles } from "../styles/appStyles";
@@ -23,26 +24,23 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
     mapRef.current?.animateToRegion(region, 350);
   }, [region.latitude, region.longitude, region.latitudeDelta, region.longitudeDelta]);
 
-  function centerMap(coordinate: Coordinate) {
-    mapRef.current?.animateToRegion(
-      {
-        latitude: coordinate.latitude,
-        longitude: coordinate.longitude,
-        latitudeDelta: 0.012,
-        longitudeDelta: 0.012
-      },
-      350
-    );
-  }
+  // Suchfunktion für alle Parkplätze in der Schweiz beim Weiterleiten
+  const handleOpenSwissParkingSearch = () => {
+    const query = encodeURIComponent("Parking");
+    const regionName = encodeURIComponent("Switzerland");
 
-  async function recenterCurrentLocation() {
-    const refreshedLocation = await onRefreshLocation();
-    const targetLocation = refreshedLocation ?? currentLocation;
+    const url = Platform.select({
+      ios: `maps://?q=${query}&near=${regionName}`,
+      android: `geo:0,0?q=${query}+${regionName}`
+    });
 
-    if (targetLocation) {
-      centerMap(targetLocation);
+    if (url) {
+      Linking.openURL(url).catch((err) => console.error("Fehler beim Öffnen der Karte:", err));
     }
-  }
+  };
+
+  // Holt die Textfarbe vom Standort-Button-Text für das Icon
+  const locationTextColor = StyleSheet.flatten(styles.locationButtonText)?.color || "#b7b5c8";
 
   return (
     <View style={styles.mapCard}>
@@ -75,16 +73,58 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
         )}
       </MapView>
 
-      <View style={styles.mapOverlayLabel}>
-        <Text style={styles.mapOverlayEyebrow}>Kartenansicht</Text>
-        <Text style={styles.mapOverlayText}>
-          {parkingSpot?.address || (currentLocation ? "Aktueller Standort" : "Standort wird gesucht")}
-        </Text>
-      </View>
+      {/* PARKING-BUTTON: Wieder im quadratischen Layout, schön gross und perfekt ausgerichtet */}
+      <TouchableOpacity 
+        style={[styles.locationButton, customStyles.parkingButtonLayout]} 
+        onPress={handleOpenSwissParkingSearch}
+        activeOpacity={0.7}
+      >
+        <MaterialCommunityIcons name="parking" size={24} color={locationTextColor} />
+      </TouchableOpacity>
 
-      <TouchableOpacity style={styles.locationButton} onPress={recenterCurrentLocation} disabled={isLocating}>
+      {/* Der Zentrier-Button unten rechts */}
+      <TouchableOpacity 
+        style={styles.locationButton} 
+        onPress={async () => {
+          const refreshedLocation = await onRefreshLocation();
+          const targetLocation = refreshedLocation ?? currentLocation;
+          if (targetLocation) {
+            mapRef.current?.animateToRegion({
+              latitude: targetLocation.latitude,
+              longitude: targetLocation.longitude,
+              latitudeDelta: 0.012,
+              longitudeDelta: 0.012
+            }, 350);
+          }
+        }} 
+        disabled={isLocating}
+      >
         <Text style={styles.locationButtonText}>{isLocating ? "..." : "Standort"}</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+const customStyles = StyleSheet.create({
+  parkingButtonLayout: {
+    // Absolutes Positioning entkoppelt von unten rechts
+    position: "absolute",
+    top: 12,
+    left: 12,
+    right: "auto",
+    bottom: "auto",
+    
+    // Festgelegte, grössere quadratische Dimensionen (wie gewünscht)
+    height: 46,
+    width: 46,
+    borderRadius: 12,
+    
+    // Setzt das Padding zurück, damit das Icon exakt in der Mitte sitzt
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    
+    zIndex: 10,
+  },
+});
