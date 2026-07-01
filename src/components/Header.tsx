@@ -21,13 +21,13 @@ export function Header({ title }: HeaderProps) {
           <Text style={styles.headerTitle}>{title}</Text>
         </View>
 
-        {/* Neuer, moderner Info-Knopf auf der rechten Seite */}
+        {/* Impressum-Button im exakten Stil der anderen Buttons (ohne grelles Leuchten) */}
         <TouchableOpacity 
           style={customStyles.infoButton} 
           onPress={() => setImpressumVisible(true)}
-          activeOpacity={0.7}
+          activeOpacity={0.7} // Gleicher Drück-Effekt (Hover/Touch) wie überall sonst
         >
-          <Text style={customStyles.infoButtonText}>[ i ]</Text>
+          <Text style={customStyles.infoButtonText}>§</Text>
         </TouchableOpacity>
       </View>
 
@@ -40,31 +40,32 @@ export function Header({ title }: HeaderProps) {
   );
 }
 
-// Zusätzliche Styles, damit das Icon perfekt rechts sitzt, ohne eure App-Styles zu zerstören
+// Zusätzliche Styles, perfekt abgestimmt auf eure appStyles
 const customStyles = StyleSheet.create({
   headerLayout: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    paddingRight: 10, // Gibt dem Button etwas Abstand zum rechten Rand
+    paddingRight: 4, // Leicht angepasst, damit es bündig mit dem Grid abschliesst
   },
   leftContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   infoButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#111116',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 34, // Passt sich der Höhe des Logos an
+    width: 34,
+    borderRadius: 10, // Leicht abgerundet wie eure anderen kleinen Icons
+    backgroundColor: '#1b1b2d', // Dunkelblau (wie secondaryButton / fullInfoTile)
     borderWidth: 1,
-    borderColor: '#00E5FF', // Matcht euer Neon-Cyan
+    borderColor: '#28283c', // Diskreter, dunkler Rahmen (wie secondaryButton / fullInfoTile)
   },
   infoButtonText: {
-    color: '#00E5FF',
-    fontSize: 12,
+    color: '#b7b5c8', // Gleiche Textfarbe wie secondaryButtonText für 100% Konsistenz
+    fontSize: 15,
     fontWeight: '900',
-    letterSpacing: 1,
   },
 });

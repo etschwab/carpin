@@ -69,13 +69,13 @@ export default function ImpressumScreen({ visible, onClose }: ImpressumProps): R
       <Animated.View style={[styles.modalOverlay, { opacity: fadeAnim }]}>
         <TouchableOpacity style={styles.absoluteClose} activeOpacity={1} onPress={onClose} />
         
-        {/* Die animierte Cyber-Card */}
+        {/* Die animierte Card im App-Style ohne Leuchten */}
         <Animated.View style={[styles.cyberCard, { transform: [{ translateY: slideAnim }] }]}>
           
           {/* Header der Card mit Schliessen-Button */}
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>// SYSTEM_INFO & LEGAL</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Text style={styles.cardTitle}>                   Impressum</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton} activeOpacity={0.7}>
               <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
           </View>
@@ -95,9 +95,9 @@ export default function ImpressumScreen({ visible, onClose }: ImpressumProps): R
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>[02] VERTRETUNGSBERECHTIGTE PERSONEN</Text>
-              <Text style={styles.developerName}>• Miguel Cabañero (Testing)</Text>
-              <Text style={styles.developerName}>• Arion Zeqaj (Frontend)</Text>
-              <Text style={styles.developerName}>• Etienne Schwab (Backend)</Text>
+              <Text style={styles.bodyText}>• Miguel Cabañero (Testing)</Text>
+              <Text style={styles.bodyText}>• Arion Zeqaj (Frontend)</Text>
+              <Text style={styles.bodyText}>• Etienne Schwab (Backend)</Text>
             </View>
 
             <View style={styles.cyberDivider} />
@@ -113,7 +113,7 @@ export default function ImpressumScreen({ visible, onClose }: ImpressumProps): R
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>[04] ALLGEMEINE GESCHÄFTSBEDINGUNGEN (AGB)</Text>
-              <Text style={styles.legalText}>
+              <Text style={styles.bodyText}>
                 Mit der Nutzung von CarPin erklären Sie sich mit unseren AGB einverstanden. Die App stellt lediglich eine Orientierungshilfe dar. Für verpasste Parkzeiten, Bussgelder, Abschleppkosten oder Ungenauigkeiten bei der GPS-Ortung (z.B. in geschlossenen Tiefgaragen) übernimmt die Betreiberin keinerlei Haftung.
               </Text>
             </View>
@@ -122,7 +122,7 @@ export default function ImpressumScreen({ visible, onClose }: ImpressumProps): R
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>[05] DATENSCHUTZERKLÄRUNG (DSG)</Text>
-              <Text style={styles.legalText}>
+              <Text style={styles.bodyText}>
                 Verantwortlich für die Datenverarbeitung ist die CarPin Schweiz AG. Diese App verarbeitet temporäre GPS-Standortdaten und Kamerabilder ausschliesslich lokal auf Ihrem Endgerät, um die Kernfunktionen bereitzustellen. Eine Übermittlung von Bewegungsprofilen an externe Server findet nicht statt.
               </Text>
             </View>
@@ -147,15 +147,13 @@ interface Styles {
   section: ViewStyle;
   sectionTitle: TextStyle;
   bodyText: TextStyle;
-  developerName: TextStyle;
-  legalText: TextStyle;
   cyberDivider: ViewStyle;
 }
 
 const styles = StyleSheet.create<Styles>({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(5, 5, 8, 0.85)', // Halbtransparentes, tiefes Schwarz über der Map
+    backgroundColor: 'rgba(8, 9, 17, 0.85)', // Matcht euren Backdrop-Wert
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -170,16 +168,12 @@ const styles = StyleSheet.create<Styles>({
   cyberCard: {
     width: width * 0.88,
     maxHeight: height * 0.65,
-    backgroundColor: '#111116',
+    backgroundColor: '#151523', // Euer Standard-Panel Hintergrund
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#00E5FF', // Euer charakteristisches Neon-Cyan
+    borderColor: '#242439', // Diskreter Rahmen eurer Kacheln
     padding: 20,
-    shadowColor: '#00E5FF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 15,
-    elevation: 10,
+    // Leuchten (Shadows & Elevation) komplett entfernt
   },
   cardHeader: {
     flexDirection: 'row',
@@ -188,23 +182,23 @@ const styles = StyleSheet.create<Styles>({
     marginBottom: 20,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#252636',
+    borderBottomColor: '#242439',
   },
   cardTitle: {
     fontSize: 13,
     fontWeight: '900',
-    color: '#00E5FF',
+    color: '#20c8f4', // Einheitliches Cyan eurer App
     letterSpacing: 2,
   },
   closeButton: {
     padding: 6,
     borderRadius: 8,
-    backgroundColor: '#1F1F29',
+    backgroundColor: '#1b1b2d', // Matcht euren secondaryButton
   },
   closeButtonText: {
-    color: '#FFFFFF',
+    color: '#b7b5c8', // Matcht euren secondaryButtonText
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '900',
   },
   scrollContent: {
     paddingBottom: 10,
@@ -213,32 +207,21 @@ const styles = StyleSheet.create<Styles>({
     marginVertical: 4,
   },
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '900',
-    color: '#71717A',
+    color: '#20c8f4', // Alle Titel [01], [02] etc. einheitlich Cyan
     letterSpacing: 1.5,
     marginBottom: 6,
   },
   bodyText: {
     fontSize: 14,
-    color: '#E4E4E7',
+    color: '#ffffff', // Alle Texte (auch Namen & AGBs) jetzt reinweiss
+    fontWeight: '500', // Dünnere, saubere Schriftstärke für bessere Lesbarkeit
     lineHeight: 20,
-  },
-  developerName: {
-    fontSize: 15,
-    color: '#FFFFFF',
-    fontWeight: '600',
-    lineHeight: 22,
-  },
-  legalText: {
-    fontSize: 12,
-    color: '#52525B',
-    lineHeight: 18,
   },
   cyberDivider: {
     height: 1,
-    backgroundColor: '#1F1F29',
+    backgroundColor: '#242439',
     marginVertical: 14,
-    borderStyle: 'dashed',
   },
 });
