@@ -3,7 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Animated, Linking, PanResponder, SafeAreaView, View } from "react-native";
+import { Alert, Animated, Linking, PanResponder, SafeAreaView, Share, View } from "react-native";
 import type { Region } from "react-native-maps";
 
 import { Header } from "./src/components/Header";
@@ -278,6 +278,34 @@ export default function App() {
     });
   }
 
+  async function shareParkingSpot() {
+    if (!parkingSpot) {
+      return;
+    }
+
+    const mapsUrl = `http://maps.apple.com/?daddr=${parkingSpot.latitude},${parkingSpot.longitude}&dirflg=w`;
+    const messageParts = [
+      `${selectedVehicle?.name ?? "Fahrzeug"} Parkplatz`,
+      parkingSpot.address || "Gespeicherter Parkplatz"
+    ];
+
+    if (parkingSpot.description) {
+      messageParts.push(parkingSpot.description);
+    }
+
+    messageParts.push(`Apple Maps: ${mapsUrl}`);
+
+    try {
+      await Share.share({
+        message: messageParts.join("\n"),
+        title: "CarPin Parkplatz",
+        ...(parkingSpot.photoUri ? { url: parkingSpot.photoUri } : {})
+      });
+    } catch {
+      Alert.alert("Teilen nicht möglich", "Der Parkplatz konnte nicht geteilt werden.");
+    }
+  }
+
   function startTimer(minutes: number) {
     if (!parkingSpot) {
       Alert.alert("Kein Parkplatz", "Speichere zuerst einen Parkplatz, damit der Timer zugeteilt werden kann.");
@@ -438,6 +466,7 @@ export default function App() {
             onRefreshCurrentLocation={() => refreshCurrentLocation(false)}
             onSaveParkingSpot={saveParkingSpot}
             onSelectVehicle={setSelectedVehicleId}
+            onShareParking={shareParkingSpot}
             onShowPhoto={() => setIsPhotoVisible(true)}
             onToggleSheetMode={toggleSheetMode}
             parkingDescription={parkingDescription}
