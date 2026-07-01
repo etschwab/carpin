@@ -20,7 +20,7 @@ export function PhotoModal({ isVisible, onClose, parkingSpot, photoUri }: PhotoM
           <Text style={styles.photoModalTitle}>Parkplatzfoto</Text>
           {visiblePhotoUri && <Image source={{ uri: visiblePhotoUri }} style={styles.photoPreview} />}
           <TouchableOpacity style={styles.primaryButton} onPress={onClose}>
-            <Text style={styles.primaryButtonText}>Schliessen</Text>
+            <Text style={styles.primaryButtonText}>Schließen</Text>
           </TouchableOpacity>
         </View>
       </View>

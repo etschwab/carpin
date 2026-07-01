@@ -27,8 +27,8 @@ export const FALLBACK_COORDINATE: Coordinate = {
 };
 
 export const SHEET_HEIGHTS: Record<SheetMode, number> = {
-  compact: 112,
-  mid: 306,
+  compact: 132,
+  mid: 348,
   full: Math.round(Dimensions.get("window").height * 0.86)
 };
 

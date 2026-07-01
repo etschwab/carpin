@@ -59,6 +59,8 @@ export default function App() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [sheetMode, setSheetMode] = useState<SheetMode>("mid");
   const sheetHeight = useRef(new Animated.Value(SHEET_HEIGHTS.mid)).current;
+  const sheetDragStartHeight = useRef(SHEET_HEIGHTS.mid);
+  const sheetCurrentHeight = useRef(SHEET_HEIGHTS.mid);
   const hasShownNotificationAlertRef = useRef(false);
 
   useEffect(() => {
@@ -161,7 +163,9 @@ export default function App() {
       mass: 0.9,
       stiffness: 190,
       useNativeDriver: false
-    }).start();
+    }).start(() => {
+      sheetCurrentHeight.current = SHEET_HEIGHTS[sheetMode];
+    });
   }, [sheetHeight, sheetMode]);
 
   const selectedVehicle = useMemo(
@@ -189,22 +193,69 @@ export default function App() {
   const currentAddressLabel = parkingSpot?.address || (currentLocation ? "Aktueller Standort" : "Standort wird gesucht");
   const coordinateLabel = `${activeMapCoordinate.latitude.toFixed(5)}, ${activeMapCoordinate.longitude.toFixed(5)}`;
   const bottomSheetAnimatedStyle = { height: sheetHeight };
+  function clampSheetHeight(height: number) {
+    return Math.min(SHEET_HEIGHTS.full, Math.max(SHEET_HEIGHTS.compact, height));
+  }
+
+  function nearestSheetMode(height: number): SheetMode {
+    return (Object.keys(SHEET_HEIGHTS) as SheetMode[]).reduce((nearestMode, mode) => {
+      const nearestDistance = Math.abs(SHEET_HEIGHTS[nearestMode] - height);
+      const modeDistance = Math.abs(SHEET_HEIGHTS[mode] - height);
+      return modeDistance < nearestDistance ? mode : nearestMode;
+    }, "mid");
+  }
+
+  function snapSheetToMode(mode: SheetMode) {
+    Animated.spring(sheetHeight, {
+      toValue: SHEET_HEIGHTS[mode],
+      damping: 24,
+      mass: 0.9,
+      stiffness: 190,
+      useNativeDriver: false
+    }).start(() => {
+      sheetCurrentHeight.current = SHEET_HEIGHTS[mode];
+    });
+    setSheetMode(mode);
+  }
+
   const sheetPanResponder = useMemo(
     () =>
       PanResponder.create({
-        onMoveShouldSetPanResponder: (_event, gesture) => Math.abs(gesture.dy) > 8,
+        onMoveShouldSetPanResponder: (_event, gesture) =>
+          Math.abs(gesture.dy) > 6 && Math.abs(gesture.dy) > Math.abs(gesture.dx),
+        onMoveShouldSetPanResponderCapture: (_event, gesture) =>
+          Math.abs(gesture.dy) > 10 && Math.abs(gesture.dy) > Math.abs(gesture.dx) * 1.2,
+        onPanResponderGrant: () => {
+          sheetHeight.stopAnimation((height) => {
+            sheetDragStartHeight.current = height;
+            sheetCurrentHeight.current = height;
+          });
+        },
+        onPanResponderMove: (_event, gesture) => {
+          const nextHeight = clampSheetHeight(sheetDragStartHeight.current - gesture.dy);
+          sheetCurrentHeight.current = nextHeight;
+          sheetHeight.setValue(nextHeight);
+        },
         onPanResponderRelease: (_event, gesture) => {
-          if (gesture.dy < -40) {
-            setSheetMode((currentMode) => (currentMode === "compact" ? "mid" : "full"));
+          const projectedHeight = clampSheetHeight(sheetCurrentHeight.current - gesture.vy * 120);
+
+          if (gesture.vy < -0.85) {
+            snapSheetToMode(sheetMode === "compact" ? "mid" : "full");
             return;
           }
 
-          if (gesture.dy > 40) {
-            setSheetMode((currentMode) => (currentMode === "full" ? "mid" : "compact"));
+          if (gesture.vy > 0.85) {
+            snapSheetToMode(sheetMode === "full" ? "mid" : "compact");
+            return;
           }
+
+          snapSheetToMode(nearestSheetMode(projectedHeight));
+        },
+        onPanResponderTerminate: () => {
+          snapSheetToMode(nearestSheetMode(sheetCurrentHeight.current));
         }
       }),
-    []
+    [sheetHeight, sheetMode]
   );
 
   useEffect(() => {
@@ -246,7 +297,7 @@ export default function App() {
           hasShownNotificationAlertRef.current = true;
           Alert.alert(
             "Mitteilungen deaktiviert",
-            "Aktiviere Mitteilungen fuer CarPin, damit du 1 Stunde, 30 Minuten, 10 Minuten, 5 Minuten und beim Ablauf erinnert wirst."
+            "Aktiviere Mitteilungen für CarPin, damit du 1 Stunde, 30 Minuten, 10 Minuten, 5 Minuten und beim Ablauf erinnert wirst."
           );
         }
         return;
