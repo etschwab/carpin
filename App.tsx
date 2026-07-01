@@ -26,6 +26,7 @@ export default function App() {
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [newVehicleName, setNewVehicleName] = useState("");
   const [newVehicleType, setNewVehicleType] = useState<VehicleType>("Auto");
+  const [editingVehicleId, setEditingVehicleId] = useState<string | null>(null);
   const [timerEnd, setTimerEnd] = useState<string | null>(null);
   const [timerStartedAt, setTimerStartedAt] = useState<string | null>(null);
   const [timerSpotId, setTimerSpotId] = useState<string | null>(null);
@@ -321,10 +322,32 @@ export default function App() {
     });
   }
 
-  function addVehicle() {
+  function resetVehicleForm() {
+    setEditingVehicleId(null);
+    setNewVehicleName("");
+    setNewVehicleType("Auto");
+  }
+
+  function startEditingVehicle(vehicle: Vehicle) {
+    setEditingVehicleId(vehicle.id);
+    setNewVehicleName(vehicle.name);
+    setNewVehicleType(vehicle.type);
+  }
+
+  function submitVehicleForm() {
     const trimmedName = newVehicleName.trim();
     if (!trimmedName) {
       Alert.alert("Name fehlt", "Gib einen Fahrzeugnamen ein.");
+      return;
+    }
+
+    if (editingVehicleId) {
+      setVehicles((currentVehicles) =>
+        currentVehicles.map((vehicle) =>
+          vehicle.id === editingVehicleId ? { ...vehicle, name: trimmedName, type: newVehicleType } : vehicle
+        )
+      );
+      resetVehicleForm();
       return;
     }
 
@@ -336,7 +359,7 @@ export default function App() {
 
     setVehicles((currentVehicles) => [...currentVehicles, vehicle]);
     setSelectedVehicleId(vehicle.id);
-    setNewVehicleName("");
+    resetVehicleForm();
   }
 
   function deleteVehicle(vehicleId: string) {
@@ -366,6 +389,10 @@ export default function App() {
         onPress: () => {
           const remainingVehicles = vehicles.filter((currentVehicle) => currentVehicle.id !== vehicleId);
           setVehicles(remainingVehicles);
+
+          if (editingVehicleId === vehicleId) {
+            resetVehicleForm();
+          }
 
           if (selectedVehicleId === vehicleId) {
             setSelectedVehicleId(remainingVehicles[0]?.id ?? DEFAULT_VEHICLES[0].id);
@@ -434,13 +461,16 @@ export default function App() {
 
         {screen === "vehicles" && (
           <VehiclesScreen
+            editingVehicleId={editingVehicleId}
             newVehicleName={newVehicleName}
             newVehicleType={newVehicleType}
-            onAddVehicle={addVehicle}
             onChangeNewVehicleName={setNewVehicleName}
             onChangeNewVehicleType={setNewVehicleType}
             onDeleteVehicle={deleteVehicle}
+            onResetVehicleForm={resetVehicleForm}
             onSelectVehicle={setSelectedVehicleId}
+            onStartEditingVehicle={startEditingVehicle}
+            onSubmitVehicleForm={submitVehicleForm}
             selectedVehicleId={selectedVehicleId}
             vehicles={vehicles}
           />
