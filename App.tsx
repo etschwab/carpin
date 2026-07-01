@@ -8,13 +8,14 @@ import type { Region } from "react-native-maps";
 
 import { Header } from "./src/components/Header";
 import { TabButton } from "./src/components/TabButton";
-import { DEFAULT_VEHICLES, FALLBACK_COORDINATE, SHEET_HEIGHTS, STORAGE_KEYS } from "./src/constants/appConstants";
+import { DEFAULT_VEHICLES, FALLBACK_COORDINATE, MAX_PARKING_HISTORY_ITEMS, SHEET_HEIGHTS, STORAGE_KEYS } from "./src/constants/appConstants";
 import { DashboardScreen } from "./src/screens/DashboardScreen";
+import { HistoryScreen } from "./src/screens/HistoryScreen";
 import { PhotoModal } from "./src/screens/PhotoModal";
 import { TimerScreen } from "./src/screens/TimerScreen";
 import { VehiclesScreen } from "./src/screens/VehiclesScreen";
 import { styles } from "./src/styles/appStyles";
-import type { Coordinate, ParkingSpot, PhotoSource, Screen, SheetMode, Vehicle, VehicleType } from "./src/types/parking";
+import type { Coordinate, ParkingHistoryItem, ParkingSpot, PhotoSource, Screen, SheetMode, Vehicle, VehicleType } from "./src/types/parking";
 import { reverseGeocode } from "./src/utils/location";
 import { parseMinutes } from "./src/utils/time";
 
@@ -23,6 +24,7 @@ export default function App() {
   const [vehicles, setVehicles] = useState<Vehicle[]>(DEFAULT_VEHICLES);
   const [selectedVehicleId, setSelectedVehicleId] = useState(DEFAULT_VEHICLES[0].id);
   const [parkingSpot, setParkingSpot] = useState<ParkingSpot | null>(null);
+  const [parkingHistory, setParkingHistory] = useState<ParkingHistoryItem[]>([]);
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [parkingDescription, setParkingDescription] = useState("");
   const [newVehicleName, setNewVehicleName] = useState("");
@@ -41,10 +43,11 @@ export default function App() {
 
   useEffect(() => {
     async function loadState() {
-      const [storedVehicles, storedParkingSpot, storedTimerEnd, storedTimerStartedAt, storedTimerSpotId] =
+      const [storedVehicles, storedParkingSpot, storedParkingHistory, storedTimerEnd, storedTimerStartedAt, storedTimerSpotId] =
         await Promise.all([
           AsyncStorage.getItem(STORAGE_KEYS.vehicles),
           AsyncStorage.getItem(STORAGE_KEYS.parkingSpot),
+          AsyncStorage.getItem(STORAGE_KEYS.parkingHistory),
           AsyncStorage.getItem(STORAGE_KEYS.timerEnd),
           AsyncStorage.getItem(STORAGE_KEYS.timerStartedAt),
           AsyncStorage.getItem(STORAGE_KEYS.timerSpotId)
@@ -58,6 +61,10 @@ export default function App() {
 
       if (storedParkingSpot) {
         setParkingSpot(JSON.parse(storedParkingSpot) as ParkingSpot);
+      }
+
+      if (storedParkingHistory) {
+        setParkingHistory(JSON.parse(storedParkingHistory) as ParkingHistoryItem[]);
       }
 
       if (storedTimerEnd) {
@@ -90,6 +97,10 @@ export default function App() {
       AsyncStorage.removeItem(STORAGE_KEYS.parkingSpot).catch(() => undefined);
     }
   }, [parkingSpot]);
+
+  useEffect(() => {
+    AsyncStorage.setItem(STORAGE_KEYS.parkingHistory, JSON.stringify(parkingHistory)).catch(() => undefined);
+  }, [parkingHistory]);
 
   useEffect(() => {
     if (timerEnd) {
@@ -205,6 +216,18 @@ export default function App() {
     return getDeviceLocation(!silent);
   }
 
+  function saveSpotToHistory(spot: ParkingHistoryItem) {
+    setParkingHistory((currentHistory) =>
+      [spot, ...currentHistory.filter((historySpot) => historySpot.id !== spot.id)].slice(0, MAX_PARKING_HISTORY_ITEMS)
+    );
+  }
+
+  function updateSpotInHistory(spot: ParkingHistoryItem) {
+    setParkingHistory((currentHistory) =>
+      currentHistory.map((historySpot) => (historySpot.id === spot.id ? spot : historySpot))
+    );
+  }
+
   async function saveParkingSpot() {
     if (!selectedVehicle) {
       Alert.alert("Kein Fahrzeug", "Bitte füge zuerst ein Fahrzeug hinzu.");
@@ -222,7 +245,7 @@ export default function App() {
 
       const address = await reverseGeocode(coordinate.latitude, coordinate.longitude);
 
-      setParkingSpot({
+      const newParkingSpot: ParkingSpot = {
         id: String(Date.now()),
         vehicleId: selectedVehicle.id,
         latitude: coordinate.latitude,
@@ -230,7 +253,10 @@ export default function App() {
         address: address || "Gespeicherter Parkplatz",
         description: parkingDescription.trim() || undefined,
         savedAt: new Date().toISOString()
-      });
+      };
+
+      setParkingSpot(newParkingSpot);
+      saveSpotToHistory(newParkingSpot);
 
       setParkingDescription("");
       Alert.alert("Parkplatz gespeichert", "Dein aktueller Standort wurde in der Karte gespeichert.");
@@ -263,7 +289,9 @@ export default function App() {
         : await ImagePicker.launchImageLibraryAsync({ quality: 0.8, mediaTypes: ["images"] });
 
     if (!result.canceled && result.assets[0]?.uri) {
-      setParkingSpot({ ...parkingSpot, photoUri: result.assets[0].uri });
+      const updatedParkingSpot = { ...parkingSpot, photoUri: result.assets[0].uri };
+      setParkingSpot(updatedParkingSpot);
+      updateSpotInHistory(updatedParkingSpot);
     }
   }
 
@@ -276,6 +304,40 @@ export default function App() {
     Linking.openURL(url).catch(() => {
       Alert.alert("Route nicht möglich", "Apple Maps konnte nicht geöffnet werden.");
     });
+  }
+
+  function openRouteToSpot(spot: ParkingHistoryItem) {
+    const url = `http://maps.apple.com/?daddr=${spot.latitude},${spot.longitude}&dirflg=w`;
+    Linking.openURL(url).catch(() => {
+      Alert.alert("Route nicht möglich", "Apple Maps konnte nicht geöffnet werden.");
+    });
+  }
+
+  function clearParkingHistory() {
+    Alert.alert("History leeren", "Alle gespeicherten Parkplätze aus der History entfernen?", [
+      { text: "Abbrechen", style: "cancel" },
+      {
+        text: "Leeren",
+        style: "destructive",
+        onPress: () => setParkingHistory([])
+      }
+    ]);
+  }
+
+  function deleteParkingHistoryItem(spotId: string) {
+    const historySpot = parkingHistory.find((spot) => spot.id === spotId);
+    if (!historySpot) {
+      return;
+    }
+
+    Alert.alert("Parkplatz löschen", `${historySpot.address || "Diesen Parkplatz"} aus der History entfernen?`, [
+      { text: "Abbrechen", style: "cancel" },
+      {
+        text: "Löschen",
+        style: "destructive",
+        onPress: () => setParkingHistory((currentHistory) => currentHistory.filter((spot) => spot.id !== spotId))
+      }
+    ]);
   }
 
   async function shareParkingSpot() {
@@ -441,12 +503,13 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
       <View style={styles.appShell}>
-        <Header title={screen === "timer" ? "Parktimer" : screen === "vehicles" ? "Fahrzeuge" : "CarPin"} />
+        <Header title={screen === "timer" ? "Parktimer" : screen === "vehicles" ? "Fahrzeuge" : screen === "history" ? "History" : "CarPin"} />
 
         <View style={styles.tabs}>
           <TabButton label="Parken" isActive={screen === "dashboard"} onPress={() => setScreen("dashboard")} />
           <TabButton label="Timer" isActive={screen === "timer"} onPress={() => setScreen("timer")} />
           <TabButton label="Fahrzeuge" isActive={screen === "vehicles"} onPress={() => setScreen("vehicles")} />
+          <TabButton label="History" isActive={screen === "history"} onPress={() => setScreen("history")} />
         </View>
 
         {screen === "dashboard" && (
@@ -510,6 +573,16 @@ export default function App() {
             onStartEditingVehicle={startEditingVehicle}
             onSubmitVehicleForm={submitVehicleForm}
             selectedVehicleId={selectedVehicleId}
+            vehicles={vehicles}
+          />
+        )}
+
+        {screen === "history" && (
+          <HistoryScreen
+            history={parkingHistory}
+            onClearHistory={clearParkingHistory}
+            onDeleteHistoryItem={deleteParkingHistoryItem}
+            onOpenRoute={openRouteToSpot}
             vehicles={vehicles}
           />
         )}

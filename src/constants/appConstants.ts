@@ -5,10 +5,13 @@ import type { Coordinate, SheetMode, Vehicle, VehicleType } from "../types/parki
 export const STORAGE_KEYS = {
   vehicles: "carpin:vehicles",
   parkingSpot: "carpin:parkingSpot",
+  parkingHistory: "carpin:parkingHistory",
   timerEnd: "carpin:timerEnd",
   timerStartedAt: "carpin:timerStartedAt",
   timerSpotId: "carpin:timerSpotId"
 };
+
+export const MAX_PARKING_HISTORY_ITEMS = 30;
 
 export const VEHICLE_TYPES: VehicleType[] = ["Auto", "Fahrrad", "Motorrad", "Scooter"];
 
