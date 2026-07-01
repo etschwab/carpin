@@ -4,7 +4,6 @@ import MapView, { Marker, Polyline, Region } from "react-native-maps";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { MAP_DARK_STYLE } from "../constants/appConstants";
-import { styles } from "../styles/appStyles";
 import type { Coordinate, ParkingSpot } from "../types/parking";
 
 type CarPinMapProps = {
@@ -18,8 +17,6 @@ type CarPinMapProps = {
 export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, parkingSpot, region }: CarPinMapProps) {
   const mapRef = useRef<MapView | null>(null);
 
-  const iconColor = StyleSheet.flatten(styles.locationButtonText)?.color || "#b7b5c8";
-  
   const parkingCoordinate = parkingSpot ? { latitude: parkingSpot.latitude, longitude: parkingSpot.longitude } : null;
   const routeCoordinates = currentLocation && parkingCoordinate ? [currentLocation, parkingCoordinate] : [];
 
@@ -34,10 +31,10 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
   };
 
   return (
-    <View style={styles.mapCard}>
+    <View style={localStyles.mapCard}>
       <MapView
         ref={mapRef}
-        style={styles.realMap}
+        style={localStyles.realMap}
         initialRegion={region}
         customMapStyle={MAP_DARK_STYLE}
         showsCompass={false}
@@ -45,48 +42,54 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
       >
         {currentLocation && (
           <Marker coordinate={currentLocation} title="Dein Standort">
-            <View style={styles.userMarker}><View style={styles.userMarkerInner} /></View>
+            <View style={localStyles.userMarker}><View style={localStyles.userMarkerInner} /></View>
           </Marker>
         )}
         {parkingCoordinate && (
           <>
             {routeCoordinates.length === 2 && <Polyline coordinates={routeCoordinates} strokeColor="#20c8f4" strokeWidth={5} />}
             <Marker coordinate={parkingCoordinate} title="Parkplatz">
-              <View style={styles.parkingMarker}><View style={styles.parkingMarkerInner} /></View>
+              <View style={localStyles.parkingMarker}><View style={localStyles.parkingMarkerInner} /></View>
             </Marker>
           </>
         )}
       </MapView>
 
-      {/* 1. PARKING-BUTTON */}
-      <TouchableOpacity style={[styles.locationButton, customStyles.iconButton, { top: 12 }]} onPress={handleOpenSwissParkingSearch}>
-        <MaterialCommunityIcons name="parking" size={28} color={iconColor} />
+      <TouchableOpacity style={[localStyles.buttonBase, { top: 12 }]} onPress={handleOpenSwissParkingSearch}>
+        <MaterialCommunityIcons name="parking" size={28} color="#20c8f4" />
       </TouchableOpacity>
 
-      {/* 2. ZENTRIEREN-BUTTON */}
       <TouchableOpacity 
-        style={[styles.locationButton, customStyles.iconButton, { top: 80 }]} 
+        style={[localStyles.buttonBase, { top: 80 }]} 
         onPress={async () => {
           const loc = await onRefreshLocation();
           if (loc) mapRef.current?.animateToRegion({ ...loc, latitudeDelta: 0.012, longitudeDelta: 0.012 }, 350);
         }}
       >
-        <MaterialCommunityIcons name="crosshairs-gps" size={28} color={iconColor} />
+        <MaterialCommunityIcons name="crosshairs-gps" size={28} color="#20c8f4" />
       </TouchableOpacity>
     </View>
   );
 }
 
-const customStyles = StyleSheet.create({
-  iconButton: {
+const localStyles = StyleSheet.create({
+  mapCard: { flex: 1, overflow: 'hidden' },
+  realMap: { ...StyleSheet.absoluteFillObject },
+  buttonBase: {
     position: "absolute",
     left: 12,
     height: 56,
     width: 56,
     borderRadius: 12,
+    backgroundColor: "#1b1b2d",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 10,
-    padding: 0,
-  }
+    borderWidth: 1,
+    borderColor: '#28283c'
+  },
+  userMarker: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(32, 200, 244, 0.3)', alignItems: 'center', justifyContent: 'center' },
+  userMarkerInner: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#20c8f4', borderWidth: 2, borderColor: '#fff' },
+  parkingMarker: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.3)', alignItems: 'center', justifyContent: 'center' },
+  parkingMarkerInner: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffffff' }
 });
