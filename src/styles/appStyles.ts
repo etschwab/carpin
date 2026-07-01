@@ -180,7 +180,7 @@ export const styles = StyleSheet.create({
     fontWeight: "800"
   },
   fullSheetContent: {
-    paddingBottom: 26
+    paddingBottom: 220
   },
   sheetContentStage: {
     flex: 1,

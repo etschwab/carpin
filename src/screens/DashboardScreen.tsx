@@ -1,4 +1,5 @@
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRef } from "react";
 import { Animated, GestureResponderHandlers, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import type { Region } from "react-native-maps";
 
@@ -44,10 +45,12 @@ type DashboardScreenProps = {
 
 function ParkingDescriptionInput({
   parkingDescription,
-  onChangeParkingDescription
+  onChangeParkingDescription,
+  onFocus
 }: {
   parkingDescription: string;
   onChangeParkingDescription: (value: string) => void;
+  onFocus?: () => void;
 }) {
   return (
     <>
@@ -56,6 +59,7 @@ function ParkingDescriptionInput({
         multiline
         numberOfLines={3}
         onChangeText={onChangeParkingDescription}
+        onFocus={onFocus}
         placeholder="z.B. Parkhaus, 2. Stock, Platz 234"
         placeholderTextColor="#777589"
         style={[styles.input, styles.parkingDescriptionInput]}
@@ -159,6 +163,7 @@ export function DashboardScreen({
   vehicles
 }: DashboardScreenProps) {
   const vehicleIcon = getVehicleIcon(selectedVehicle);
+  const fullSheetScrollRef = useRef<ScrollView | null>(null);
   const sheetHeight = bottomSheetAnimatedStyle.height;
   const compactContentAnimatedStyle = {
     opacity: sheetHeight.interpolate({
@@ -383,6 +388,9 @@ export function DashboardScreen({
               <ParkingDescriptionInput
                 parkingDescription={parkingDescription}
                 onChangeParkingDescription={onChangeParkingDescription}
+                onFocus={() => {
+                  setTimeout(() => fullSheetScrollRef.current?.scrollTo({ y: 330, animated: true }), 120);
+                }}
               />
               <Text style={styles.sectionLabel}>Foto</Text>
               <View style={styles.actionRow}>
@@ -445,6 +453,10 @@ export function DashboardScreen({
           </Animated.View>
 
           <Animated.ScrollView
+            ref={fullSheetScrollRef}
+            automaticallyAdjustKeyboardInsets
+            keyboardDismissMode="interactive"
+            keyboardShouldPersistTaps="handled"
             pointerEvents={sheetMode === "full" ? "auto" : "none"}
             showsVerticalScrollIndicator={false}
             style={[styles.sheetContentLayer, fullContentAnimatedStyle]}
