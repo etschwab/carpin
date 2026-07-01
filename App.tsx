@@ -180,6 +180,17 @@ export default function App() {
   const timerSpotMatchesActiveSpot = Boolean(parkingSpot && timerSpotId === parkingSpot.id);
   const remainingMs = timerEnd ? new Date(timerEnd).getTime() - now : 0;
   const timerIsActive = Boolean(timerEnd && remainingMs > 0);
+  const activeTimerMinutes = useMemo(() => {
+    if (!timerStartedAt || !timerEnd) {
+      return null;
+    }
+
+    const startedAtMs = new Date(timerStartedAt).getTime();
+    const endsAtMs = new Date(timerEnd).getTime();
+    const totalMinutes = Math.round((endsAtMs - startedAtMs) / 60000);
+
+    return Number.isFinite(totalMinutes) && totalMinutes > 0 ? totalMinutes : null;
+  }, [timerEnd, timerStartedAt]);
   const activeMapCoordinate = parkingSpot ?? currentLocation ?? FALLBACK_COORDINATE;
   const mapRegion = useMemo<Region>(
     () => ({
@@ -555,6 +566,25 @@ export default function App() {
     setScreen("timer");
   }
 
+  function startTimerUntil(endDate: Date) {
+    if (!parkingSpot) {
+      Alert.alert("Kein Parkplatz", "Speichere zuerst einen Parkplatz, damit der Timer zugeteilt werden kann.");
+      setScreen("dashboard");
+      return;
+    }
+
+    if (endDate.getTime() <= Date.now()) {
+      Alert.alert("Ungültige Zeit", "Wähle einen Zeitpunkt in der Zukunft.");
+      return;
+    }
+
+    const start = new Date().toISOString();
+    setTimerStartedAt(start);
+    setTimerEnd(endDate.toISOString());
+    setTimerSpotId(parkingSpot.id);
+    setScreen("timer");
+  }
+
   function startCustomTimer() {
     const minutes = parseMinutes(customTimerMinutes);
     if (!minutes) {
@@ -721,10 +751,11 @@ export default function App() {
 
         {screen === "timer" && (
           <TimerScreen
+            activeTimerMinutes={activeTimerMinutes}
             customTimerMinutes={customTimerMinutes}
             onChangeCustomTimerMinutes={setCustomTimerMinutes}
-            onStartCustomTimer={startCustomTimer}
             onStartTimer={startTimer}
+            onStartTimerUntil={startTimerUntil}
             parkingSpot={parkingSpot}
             remainingMs={remainingMs}
             timerEnd={timerEnd}
