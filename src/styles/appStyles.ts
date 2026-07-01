@@ -327,6 +327,10 @@ export const styles = StyleSheet.create({
     marginTop: 14,
     paddingVertical: 16
   },
+  formActions: {
+    gap: 10,
+    marginTop: 14
+  },
   primaryButtonSmall: {
     alignItems: "center",
     backgroundColor: "#20c8f4",
@@ -336,6 +340,19 @@ export const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: "#071018",
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  secondaryButton: {
+    alignItems: "center",
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 16
+  },
+  secondaryButtonText: {
+    color: "#b7b5c8",
     fontSize: 14,
     fontWeight: "900"
   },

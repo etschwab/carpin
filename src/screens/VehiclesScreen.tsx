@@ -5,32 +5,38 @@ import { styles } from "../styles/appStyles";
 import type { Vehicle, VehicleType } from "../types/parking";
 
 type VehiclesScreenProps = {
+  editingVehicleId: string | null;
   newVehicleName: string;
   newVehicleType: VehicleType;
-  onAddVehicle: () => void;
   onChangeNewVehicleName: (value: string) => void;
   onChangeNewVehicleType: (type: VehicleType) => void;
   onDeleteVehicle: (vehicleId: string) => void;
+  onResetVehicleForm: () => void;
   onSelectVehicle: (vehicleId: string) => void;
+  onStartEditingVehicle: (vehicle: Vehicle) => void;
+  onSubmitVehicleForm: () => void;
   selectedVehicleId: string;
   vehicles: Vehicle[];
 };
 
 export function VehiclesScreen({
+  editingVehicleId,
   newVehicleName,
   newVehicleType,
-  onAddVehicle,
   onChangeNewVehicleName,
   onChangeNewVehicleType,
   onDeleteVehicle,
+  onResetVehicleForm,
   onSelectVehicle,
+  onStartEditingVehicle,
+  onSubmitVehicleForm,
   selectedVehicleId,
   vehicles
 }: VehiclesScreenProps) {
   return (
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.panel}>
-        <Text style={styles.panelTitle}>Neues Fahrzeug</Text>
+        <Text style={styles.panelTitle}>{editingVehicleId ? "Fahrzeug bearbeiten" : "Neues Fahrzeug"}</Text>
         <TextInput
           value={newVehicleName}
           onChangeText={onChangeNewVehicleName}
@@ -49,9 +55,18 @@ export function VehiclesScreen({
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity style={styles.primaryButton} onPress={onAddVehicle}>
-          <Text style={styles.primaryButtonText}>Fahrzeug hinzufügen</Text>
-        </TouchableOpacity>
+        <View style={styles.formActions}>
+          <TouchableOpacity style={styles.primaryButton} onPress={onSubmitVehicleForm}>
+            <Text style={styles.primaryButtonText}>
+              {editingVehicleId ? "Aenderungen speichern" : "Fahrzeug hinzufuegen"}
+            </Text>
+          </TouchableOpacity>
+          {editingVehicleId && (
+            <TouchableOpacity style={styles.secondaryButton} onPress={onResetVehicleForm}>
+              <Text style={styles.secondaryButtonText}>Abbrechen</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <View style={styles.panel}>
@@ -64,10 +79,13 @@ export function VehiclesScreen({
             </View>
             <View style={styles.vehicleActions}>
               <TouchableOpacity onPress={() => onSelectVehicle(vehicle.id)}>
-                <Text style={styles.linkText}>{selectedVehicleId === vehicle.id ? "Aktiv" : "Auswählen"}</Text>
+                <Text style={styles.linkText}>{selectedVehicleId === vehicle.id ? "Aktiv" : "Auswaehlen"}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => onStartEditingVehicle(vehicle)}>
+                <Text style={styles.linkText}>Bearbeiten</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => onDeleteVehicle(vehicle.id)}>
-                <Text style={styles.deleteText}>Löschen</Text>
+                <Text style={styles.deleteText}>Loeschen</Text>
               </TouchableOpacity>
             </View>
           </View>
