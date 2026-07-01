@@ -714,6 +714,71 @@ export const styles = StyleSheet.create({
     aspectRatio: 1.1,
     borderRadius: 18,
     width: "100%"
+  },
+  emptyHistoryText: {
+    color: "#9aa8b6",
+    fontSize: 14,
+    lineHeight: 20
+  },
+  historyHeaderRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10
+  },
+  historyCard: {
+    backgroundColor: "#151523",
+    borderColor: "#242439",
+    borderRadius: 18,
+    borderWidth: 1,
+    marginBottom: 12,
+    padding: 14
+  },
+  historyTopRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12
+  },
+  historyTitleWrap: {
+    flex: 1
+  },
+  historyMetaRow: {
+    borderTopColor: "#242439",
+    borderTopWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between",
+    marginTop: 12,
+    paddingTop: 12
+  },
+  historyMetaText: {
+    color: "#777589",
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "800"
+  },
+  historyActionRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 12
+  },
+  historyRouteButton: {
+    alignItems: "center",
+    backgroundColor: "#0e3448",
+    borderColor: "#176783",
+    borderRadius: 14,
+    borderWidth: 1,
+    flex: 1,
+    paddingVertical: 13
+  },
+  historyDeleteButton: {
+    alignItems: "center",
+    backgroundColor: "#2b1b23",
+    borderColor: "#6f2b3c",
+    borderRadius: 14,
+    borderWidth: 1,
+    flex: 1,
+    paddingVertical: 13
   }
 });
 

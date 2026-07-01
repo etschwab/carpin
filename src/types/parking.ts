@@ -20,6 +20,8 @@ export type ParkingSpot = Coordinate & {
   photoUri?: string;
 };
 
-export type Screen = "dashboard" | "timer" | "vehicles";
+export type ParkingHistoryItem = ParkingSpot;
+
+export type Screen = "dashboard" | "timer" | "vehicles" | "history";
 export type SheetMode = "compact" | "mid" | "full";
 export type PhotoSource = "camera" | "library";
