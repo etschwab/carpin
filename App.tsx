@@ -44,6 +44,7 @@ export default function App() {
   const [parkingHistory, setParkingHistory] = useState<ParkingHistoryItem[]>([]);
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [parkingDescription, setParkingDescription] = useState("");
+  const [pendingPhotoUri, setPendingPhotoUri] = useState<string | null>(null);
   const [newVehicleName, setNewVehicleName] = useState("");
   const [newVehicleType, setNewVehicleType] = useState<VehicleType>("Auto");
   const [editingVehicleId, setEditingVehicleId] = useState<string | null>(null);
@@ -370,6 +371,7 @@ export default function App() {
         longitude: coordinate.longitude,
         address: address || "Gespeicherter Parkplatz",
         description: parkingDescription.trim() || undefined,
+        photoUri: pendingPhotoUri || undefined,
         savedAt: new Date().toISOString()
       };
 
@@ -377,6 +379,7 @@ export default function App() {
       saveSpotToHistory(newParkingSpot);
 
       setParkingDescription("");
+      setPendingPhotoUri(null);
       Alert.alert("Parkplatz gespeichert", "Dein aktueller Standort wurde in der Karte gespeichert.");
     } catch {
       Alert.alert("Fehler", "Der Parkplatz konnte nicht gespeichert werden.");
@@ -386,11 +389,6 @@ export default function App() {
   }
 
   async function pickPhoto(source: PhotoSource) {
-    if (!parkingSpot) {
-      Alert.alert("Kein Parkplatz", "Speichere zuerst einen Parkplatz.");
-      return;
-    }
-
     const permission =
       source === "camera"
         ? await ImagePicker.requestCameraPermissionsAsync()
@@ -407,6 +405,11 @@ export default function App() {
         : await ImagePicker.launchImageLibraryAsync({ quality: 0.8, mediaTypes: ["images"] });
 
     if (!result.canceled && result.assets[0]?.uri) {
+      if (!parkingSpot) {
+        setPendingPhotoUri(result.assets[0].uri);
+        return;
+      }
+
       const updatedParkingSpot = { ...parkingSpot, photoUri: result.assets[0].uri };
       setParkingSpot(updatedParkingSpot);
       updateSpotInHistory(updatedParkingSpot);
@@ -521,6 +524,7 @@ export default function App() {
     setParkingSpot(null);
     setIsPhotoVisible(false);
     setParkingDescription("");
+    setPendingPhotoUri(null);
   }
 
   function toggleSheetMode() {
@@ -652,6 +656,7 @@ export default function App() {
             onToggleSheetMode={toggleSheetMode}
             parkingDescription={parkingDescription}
             parkingSpot={parkingSpot}
+            pendingPhotoUri={pendingPhotoUri}
             remainingMs={remainingMs}
             selectedVehicle={selectedVehicle}
             selectedVehicleId={selectedVehicleId}
@@ -706,7 +711,12 @@ export default function App() {
         )}
       </View>
 
-      <PhotoModal isVisible={isPhotoVisible} onClose={() => setIsPhotoVisible(false)} parkingSpot={parkingSpot} />
+      <PhotoModal
+        isVisible={isPhotoVisible}
+        onClose={() => setIsPhotoVisible(false)}
+        parkingSpot={parkingSpot}
+        photoUri={pendingPhotoUri}
+      />
     </SafeAreaView>
   );
 }

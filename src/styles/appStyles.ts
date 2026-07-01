@@ -312,6 +312,21 @@ export const styles = StyleSheet.create({
   vehiclePillActive: {
     backgroundColor: "#20c8f4"
   },
+  vehicleIconPill: {
+    alignItems: "center",
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 14,
+    borderWidth: 1,
+    flexDirection: "column",
+    marginHorizontal: 5,
+    minWidth: 100,
+    paddingHorizontal: 12,
+    paddingVertical: 12
+  },
+  vehicleIcon: {
+    marginTop: 8
+  },
   vehiclePillText: {
     color: "#b7b5c8",
     fontSize: 12,

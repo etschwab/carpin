@@ -30,6 +30,7 @@ type DashboardScreenProps = {
   onToggleSheetMode: () => void;
   parkingDescription: string;
   parkingSpot: ParkingSpot | null;
+  pendingPhotoUri: string | null;
   remainingMs: number;
   selectedVehicle: Vehicle | undefined;
   selectedVehicleId: string;
@@ -81,6 +82,45 @@ function getVehicleIcon(vehicle: Vehicle | undefined) {
   return { iconName: "car", IconComponent: FontAwesome5 };
 }
 
+function VehicleIconSelector({
+  onSelectVehicle,
+  selectedVehicleId,
+  vehicles
+}: {
+  onSelectVehicle: (vehicleId: string) => void;
+  selectedVehicleId: string;
+  vehicles: Vehicle[];
+}) {
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.vehicleStrip}>
+      {vehicles.map((vehicle) => {
+        const { iconName, IconComponent } = getVehicleIcon(vehicle);
+        const isActive = selectedVehicleId === vehicle.id;
+
+        return (
+          <TouchableOpacity
+            key={vehicle.id}
+            style={[styles.vehicleIconPill, isActive && styles.vehiclePillActive]}
+            onPress={() => onSelectVehicle(vehicle.id)}
+          >
+            <Text style={[styles.vehiclePillText, isActive && styles.vehiclePillTextActive]}>{vehicle.name}</Text>
+            <IconComponent
+              color={
+                isActive
+                  ? StyleSheet.flatten(styles.vehiclePillTextActive)?.color || "#071018"
+                  : StyleSheet.flatten(styles.vehiclePillText)?.color || "#b7b5c8"
+              }
+              name={iconName}
+              size={26}
+              style={styles.vehicleIcon}
+            />
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
 export function DashboardScreen({
   bottomSheetAnimatedStyle,
   coordinateLabel,
@@ -102,6 +142,7 @@ export function DashboardScreen({
   onToggleSheetMode,
   parkingDescription,
   parkingSpot,
+  pendingPhotoUri,
   remainingMs,
   selectedVehicle,
   selectedVehicleId,
@@ -169,7 +210,7 @@ export function DashboardScreen({
                 label="Timer"
                 value={parkingSpot && timerSpotMatchesActiveSpot && timerIsActive ? formatCountdown(remainingMs) : "nicht gesetzt"}
               />
-              <FullInfoTile icon="F" label="Foto" value={parkingSpot?.photoUri ? "gespeichert" : "noch offen"} />
+              <FullInfoTile icon="F" label="Foto" value={parkingSpot?.photoUri || pendingPhotoUri ? "gespeichert" : "noch offen"} />
             </View>
 
             <View style={styles.fullActionPanel}>
@@ -204,10 +245,30 @@ export function DashboardScreen({
                 </>
               ) : (
                 <>
+                  <VehicleIconSelector
+                    onSelectVehicle={onSelectVehicle}
+                    selectedVehicleId={selectedVehicleId}
+                    vehicles={vehicles}
+                  />
                   <ParkingDescriptionInput
                     parkingDescription={parkingDescription}
                     onChangeParkingDescription={onChangeParkingDescription}
                   />
+                  <Text style={styles.sectionLabel}>Foto</Text>
+                  <View style={styles.actionRow}>
+                    <TouchableOpacity style={styles.darkButton} onPress={() => onPickPhoto("camera")}>
+                      <Text style={styles.darkButtonText}>Foto aufnehmen</Text>
+                    </TouchableOpacity>
+                    {pendingPhotoUri ? (
+                      <TouchableOpacity style={styles.darkButton} onPress={onShowPhoto}>
+                        <Text style={styles.darkButtonText}>Foto anzeigen</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity style={styles.darkButton} onPress={() => onPickPhoto("library")}>
+                        <Text style={styles.darkButtonText}>Galerie</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                   <TouchableOpacity style={styles.primaryButton} onPress={onSaveParkingSpot} disabled={isSavingSpot}>
                     <Text style={styles.primaryButtonText}>{isSavingSpot ? "Speichere..." : "Parkplatz speichern"}</Text>
                   </TouchableOpacity>
@@ -274,48 +335,10 @@ export function DashboardScreen({
               </View>
             </View>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.vehicleStrip}>
-              {vehicles.map((vehicle) => {
-                const { iconName, IconComponent } = getVehicleIcon(vehicle);
-                const isActive = selectedVehicleId === vehicle.id;
-                const targetRadius = StyleSheet.flatten(styles.lastSavedCard)?.borderRadius || 12;
-
-                return (
-                  <TouchableOpacity
-                    key={vehicle.id}
-                    style={[
-                      styles.vehiclePill,
-                      isActive && styles.vehiclePillActive,
-                      {
-                        alignItems: "center",
-                        borderRadius: targetRadius,
-                        flexDirection: "column",
-                        marginHorizontal: 5,
-                        minWidth: 100,
-                        paddingVertical: 12
-                      }
-                    ]}
-                    onPress={() => onSelectVehicle(vehicle.id)}
-                  >
-                    <Text style={[styles.vehiclePillText, isActive && styles.vehiclePillTextActive]}>{vehicle.name}</Text>
-                    <IconComponent
-                      color={
-                        isActive
-                          ? StyleSheet.flatten(styles.vehiclePillTextActive)?.color || "#00E5FF"
-                          : StyleSheet.flatten(styles.vehiclePillText)?.color || "#71717A"
-                      }
-                      name={iconName}
-                      size={26}
-                      style={{ marginTop: 8 }}
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-
-            <ParkingDescriptionInput
-              parkingDescription={parkingDescription}
-              onChangeParkingDescription={onChangeParkingDescription}
+            <VehicleIconSelector
+              onSelectVehicle={onSelectVehicle}
+              selectedVehicleId={selectedVehicleId}
+              vehicles={vehicles}
             />
 
             <TouchableOpacity style={styles.primaryButton} onPress={onSaveParkingSpot} disabled={isSavingSpot}>
