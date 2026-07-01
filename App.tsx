@@ -227,7 +227,7 @@ export default function App() {
           hasShownNotificationAlertRef.current = true;
           Alert.alert(
             "Mitteilungen deaktiviert",
-            "Aktiviere Mitteilungen fuer CarPin, damit du 10 Minuten, 5 Minuten und beim Ablauf erinnert wirst."
+            "Aktiviere Mitteilungen fuer CarPin, damit du 1 Stunde, 30 Minuten, 10 Minuten, 5 Minuten und beim Ablauf erinnert wirst."
           );
         }
         return;
