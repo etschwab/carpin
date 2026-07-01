@@ -24,7 +24,6 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
     mapRef.current?.animateToRegion(region, 350);
   }, [region.latitude, region.longitude, region.latitudeDelta, region.longitudeDelta]);
 
-  // Suchfunktion für alle Parkplätze in der Schweiz beim Weiterleiten
   const handleOpenSwissParkingSearch = () => {
     const query = encodeURIComponent("Parking");
     const regionName = encodeURIComponent("Switzerland");
@@ -39,7 +38,6 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
     }
   };
 
-  // Holt die Textfarbe vom Standort-Button-Text für das Icon
   const locationTextColor = StyleSheet.flatten(styles.locationButtonText)?.color || "#b7b5c8";
 
   return (
@@ -73,58 +71,57 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
         )}
       </MapView>
 
-      {/* PARKING-BUTTON: Wieder im quadratischen Layout, schön gross und perfekt ausgerichtet */}
-      <TouchableOpacity 
-        style={[styles.locationButton, customStyles.parkingButtonLayout]} 
-        onPress={handleOpenSwissParkingSearch}
-        activeOpacity={0.7}
-      >
-        <MaterialCommunityIcons name="parking" size={24} color={locationTextColor} />
-      </TouchableOpacity>
+      {/* Container für die Buttons oben rechts */}
+      <View style={customStyles.buttonContainer}>
+        {/* PARKING-BUTTON */}
+        <TouchableOpacity 
+          style={customStyles.iconButton} 
+          onPress={handleOpenSwissParkingSearch}
+          activeOpacity={0.7}
+        >
+          <MaterialCommunityIcons name="parking" size={24} color={locationTextColor} />
+        </TouchableOpacity>
 
-      {/* Der Zentrier-Button unten rechts */}
-      <TouchableOpacity 
-        style={styles.locationButton} 
-        onPress={async () => {
-          const refreshedLocation = await onRefreshLocation();
-          const targetLocation = refreshedLocation ?? currentLocation;
-          if (targetLocation) {
-            mapRef.current?.animateToRegion({
-              latitude: targetLocation.latitude,
-              longitude: targetLocation.longitude,
-              latitudeDelta: 0.012,
-              longitudeDelta: 0.012
-            }, 350);
-          }
-        }} 
-        disabled={isLocating}
-      >
-        <Text style={styles.locationButtonText}>{isLocating ? "..." : "Standort"}</Text>
-      </TouchableOpacity>
+        {/* ZENTRIER-BUTTON (unter Parking) */}
+        <TouchableOpacity 
+          style={[customStyles.iconButton, { marginTop: 10 }]} 
+          onPress={async () => {
+            const refreshedLocation = await onRefreshLocation();
+            const targetLocation = refreshedLocation ?? currentLocation;
+            if (targetLocation) {
+              mapRef.current?.animateToRegion({
+                latitude: targetLocation.latitude,
+                longitude: targetLocation.longitude,
+                latitudeDelta: 0.012,
+                longitudeDelta: 0.012
+              }, 350);
+            }
+          }} 
+          disabled={isLocating}
+          activeOpacity={0.7}
+        >
+          <MaterialCommunityIcons name="crosshairs-gps" size={24} color={locationTextColor} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const customStyles = StyleSheet.create({
-  parkingButtonLayout: {
-    // Absolutes Positioning entkoppelt von unten rechts
+  buttonContainer: {
     position: "absolute",
-    top: 12,
-    left: 12,
-    right: "auto",
-    bottom: "auto",
-    
-    // Festgelegte, grössere quadratische Dimensionen (wie gewünscht)
-    height: 46,
-    width: 46,
-    borderRadius: 12,
-    
-    // Setzt das Padding zurück, damit das Icon exakt in der Mitte sitzt
-    paddingHorizontal: 0,
-    paddingVertical: 0,
+    right: 16,
+    top: 18,
+    alignItems: "center",
+  },
+  iconButton: {
+    backgroundColor: "rgba(17, 17, 29, 0.92)",
+    borderColor: "#242439",
+    borderRadius: 16,
+    borderWidth: 1,
+    height: 48,
+    width: 48,
     alignItems: "center",
     justifyContent: "center",
-    
-    zIndex: 10,
   },
 });
