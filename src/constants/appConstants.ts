@@ -10,6 +10,8 @@ export const STORAGE_KEYS = {
   timerSpotId: "carpin:timerSpotId"
 };
 
+export const TIMER_REMINDER_MINUTES = [10, 5] as const;
+
 export const VEHICLE_TYPES: VehicleType[] = ["Auto", "Fahrrad", "Motorrad", "Scooter"];
 
 export const DEFAULT_VEHICLES: Vehicle[] = [

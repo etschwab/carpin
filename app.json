@@ -18,12 +18,14 @@
       "infoPlist": {
         "NSCameraUsageDescription": "CarPin nutzt die Kamera, damit du ein Foto deines Parkplatzes speichern kannst.",
         "NSPhotoLibraryUsageDescription": "CarPin nutzt die Galerie, damit du ein bestehendes Parkplatzfoto auswaehlen kannst.",
-        "NSLocationWhenInUseUsageDescription": "CarPin nutzt deinen Standort, um den Parkplatz deines Fahrzeugs zu speichern."
+        "NSLocationWhenInUseUsageDescription": "CarPin nutzt deinen Standort, um den Parkplatz deines Fahrzeugs zu speichern.",
+        "NSUserNotificationsUsageDescription": "CarPin erinnert dich 10 Minuten, 5 Minuten und direkt beim Ablauf deiner Parkzeit."
       }
     },
     "plugins": [
       "expo-location",
-      "expo-image-picker"
+      "expo-image-picker",
+      "expo-notifications"
     ]
   }
 }
