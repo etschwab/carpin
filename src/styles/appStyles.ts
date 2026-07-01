@@ -139,12 +139,6 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     width: 36
   },
-  parkingMarkerInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#20c8f4'
-  },
   parkingMarkerText: {
     color: "#071018",
     fontSize: 15,
@@ -826,3 +820,4 @@ export const styles = StyleSheet.create({
     paddingVertical: 13
   }
 });
+
