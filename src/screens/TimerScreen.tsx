@@ -36,6 +36,7 @@ type TimerScreenProps = {
   timerStartedAt: string | null;
 };
 
+// Zeit Eingabe
 function formatTimeInput(date: Date) {
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
@@ -53,6 +54,7 @@ export function TimerScreen({
   timerSpotMatchesActiveSpot,
   timerStartedAt
 }: TimerScreenProps) {
+  // Ring Werte
   const ringSize = 236;
   const strokeWidth = 14;
   const ringRadius = (ringSize - strokeWidth) / 2;
@@ -62,6 +64,7 @@ export function TimerScreen({
   const [isCustomModalVisible, setIsCustomModalVisible] = useState(false);
   const [customMode, setCustomMode] = useState<CustomTimerMode>("duration");
   const [untilTime, setUntilTime] = useState(() => formatTimeInput(new Date(Date.now() + 60 * 60 * 1000)));
+  // Schnellwahl
   const presets = useMemo(
     () => [
       { label: "30 min", minutes: 30 },
@@ -70,6 +73,7 @@ export function TimerScreen({
     ],
     []
   );
+  // Ring Fortschritt
   const timerProgress = useMemo(() => {
     if (!timerIsActive || !timerStartedAt || !timerEnd) {
       return 0;
@@ -87,6 +91,7 @@ export function TimerScreen({
   }, [remainingMs, timerEnd, timerIsActive, timerStartedAt]);
   const progressDashOffset = ringCircumference * (1 - timerProgress);
 
+  // Ring Animation
   useEffect(() => {
     Animated.timing(animatedDashOffset, {
       toValue: progressDashOffset,
@@ -96,6 +101,7 @@ export function TimerScreen({
     }).start();
   }, [animatedDashOffset, progressDashOffset, timerIsActive]);
 
+  // Popup oeffne
   function openCustomTimerModal(mode: CustomTimerMode = timerIsActive ? "until" : "duration") {
     const suggestedEndDate = timerEnd ? new Date(timerEnd) : new Date(Date.now() + 60 * 60 * 1000);
     setUntilTime(formatTimeInput(suggestedEndDate));
@@ -103,6 +109,7 @@ export function TimerScreen({
     setIsCustomModalVisible(true);
   }
 
+  // Dauer Timer
   function startDurationTimer() {
     const minutes = parseMinutes(customTimerMinutes);
     if (!minutes) {
@@ -114,6 +121,7 @@ export function TimerScreen({
     onStartTimer(minutes);
   }
 
+  // Bis Uhrzeit
   function startUntilTimer() {
     const normalizedTime = untilTime.trim();
     const match = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(normalizedTime);
@@ -135,6 +143,7 @@ export function TimerScreen({
     onStartTimerUntil(endDate);
   }
 
+  // Timer OK
   function submitCustomTimer() {
     if (customMode === "duration") {
       startDurationTimer();
@@ -144,6 +153,7 @@ export function TimerScreen({
     startUntilTimer();
   }
 
+  // Timer UI
   return (
     <>
       <KeyboardAvoidingView
@@ -232,6 +242,7 @@ export function TimerScreen({
         </ScrollView>
       </KeyboardAvoidingView>
 
+      {/* Timer Popup */}
       <Modal
         animationType="slide"
         onRequestClose={() => setIsCustomModalVisible(false)}

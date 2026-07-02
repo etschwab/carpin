@@ -57,6 +57,7 @@ type DashboardScreenProps = {
   vehicles: Vehicle[];
 };
 
+// Fahrzeug Icon
 function getVehicleIcon(vehicle: Vehicle | undefined) {
   const checkName = (vehicle?.type || vehicle?.name || "").toLowerCase().trim();
 
@@ -75,6 +76,7 @@ function getVehicleIcon(vehicle: Vehicle | undefined) {
   return { iconName: "car", IconComponent: FontAwesome5 };
 }
 
+// Kachel Icon
 function getInfoTileIcon(tile: "location" | "timer" | "photo") {
   if (tile === "location") {
     return <MaterialCommunityIcons color="#20c8f4" name="crosshairs-gps" size={18} />;
@@ -87,6 +89,7 @@ function getInfoTileIcon(tile: "location" | "timer" | "photo") {
   return <MaterialCommunityIcons color="#20c8f4" name="image-outline" size={18} />;
 }
 
+// Fahrzeug Wahl
 function VehicleIconSelector({
   onSelectVehicle,
   selectedVehicleId,
@@ -165,6 +168,7 @@ export function DashboardScreen({
   timerSpotMatchesActiveSpot,
   vehicles
 }: DashboardScreenProps) {
+  // Sheet Animation
   const vehicleIcon = getVehicleIcon(selectedVehicle);
   const VehicleInfoIcon = vehicleIcon.IconComponent;
   const fullSheetScrollRef = useRef<ScrollView | null>(null);
@@ -241,6 +245,7 @@ export function DashboardScreen({
     ]
   };
 
+  // Kompakt Sheet
   function renderCompactContent() {
     return (
       <TouchableOpacity
@@ -255,11 +260,13 @@ export function DashboardScreen({
     );
   }
 
+  // Beschrieb Popup
   function openDescriptionModal() {
     setDescriptionDraft(parkingSpot?.description ?? parkingDescription);
     setIsDescriptionModalVisible(true);
   }
 
+  // Beschrieb OK
   function submitDescription() {
     if (parkingSpot) {
       onUpdateParkingSpotDescription(descriptionDraft);
@@ -269,6 +276,7 @@ export function DashboardScreen({
     setIsDescriptionModalVisible(false);
   }
 
+  // Halb Sheet
   function renderMidContent() {
     if (parkingSpot) {
       return (
@@ -332,6 +340,7 @@ export function DashboardScreen({
     );
   }
 
+  // Voll Sheet
   function renderFullContent() {
     return (
       <>
@@ -442,6 +451,7 @@ export function DashboardScreen({
     );
   }
 
+  // Quer Panel
   function renderWideDashboardPanel() {
     const photoIsSaved = Boolean(parkingSpot?.photoUri || pendingPhotoUri);
 
@@ -524,6 +534,7 @@ export function DashboardScreen({
     );
   }
 
+  // Quer Layout
   if (isWideLayout) {
     return (
       <View style={styles.wideDashboard}>
@@ -588,6 +599,7 @@ export function DashboardScreen({
     );
   }
 
+  // Alte Variante
   if (false && isWideLayout) {
     return (
       <View style={styles.wideMapScreen}>
@@ -711,6 +723,7 @@ export function DashboardScreen({
     );
   }
 
+  // Handy Layout
   return (
     <View style={styles.mapScreen}>
       <CarPinMap
@@ -723,6 +736,7 @@ export function DashboardScreen({
         region={mapRegion}
       />
 
+      {/* Zieh Sheet */}
       <Animated.View style={[styles.bottomSheet, bottomSheetAnimatedStyle]} {...sheetPanHandlers}>
         <View style={styles.sheetHandleArea}>
           <TouchableOpacity style={styles.handleTapTarget} onPress={onToggleSheetMode}>
@@ -763,6 +777,7 @@ export function DashboardScreen({
         </View>
       </Animated.View>
 
+      {/* Beschrieb Modal */}
       <Modal
         animationType="slide"
         onRequestClose={() => setIsDescriptionModalVisible(false)}

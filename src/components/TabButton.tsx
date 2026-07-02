@@ -8,6 +8,7 @@ type TabButtonProps = {
   onPress: () => void;
 };
 
+// Tab Knopf
 export function TabButton({ label, isActive, onPress }: TabButtonProps) {
   return (
     <TouchableOpacity style={[styles.tabButton, isActive && styles.tabButtonActive]} onPress={onPress}>

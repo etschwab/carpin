@@ -4,6 +4,7 @@ const { act } = renderer;
 
 const { FullInfoTile } = require("../src/components/FullInfoTile");
 
+// Snapshot Test
 describe("Etienne - Dashboard-Statuskachel", () => {
   test("Snapshot: FullInfoTile rendert Label, Wert und Icon stabil", () => {
     let component;

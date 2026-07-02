@@ -14,20 +14,20 @@ import {
 
 const { width, height } = Dimensions.get('window');
 
-// TypeScript Props: Steuerung von aussen (aus dem Header)
+// Props
 interface ImpressumProps {
   visible: boolean;
   onClose: () => void;
 }
 
 export default function ImpressumScreen({ visible, onClose }: ImpressumProps): React.JSX.Element {
-  // Animations-Referenzen
+  // Animation
   const fadeAnim = useRef<Animated.Value>(new Animated.Value(0)).current;
   const slideAnim = useRef<Animated.Value>(new Animated.Value(height)).current;
 
   useEffect(() => {
     if (visible) {
-      // Einblenden-Animation
+      // Einblende
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -42,7 +42,7 @@ export default function ImpressumScreen({ visible, onClose }: ImpressumProps): R
         }),
       ]).start();
     } else {
-      // Ausblenden-Animation
+      // Usblende
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 0,
@@ -65,14 +65,14 @@ export default function ImpressumScreen({ visible, onClose }: ImpressumProps): R
       animationType="none"
       onRequestClose={onClose}
     >
-      {/* Abgedunkelter Hintergrund */}
+      {/* Hintergrund */}
       <Animated.View style={[styles.modalOverlay, { opacity: fadeAnim }]}>
         <TouchableOpacity style={styles.absoluteClose} activeOpacity={1} onPress={onClose} />
         
-        {/* Die animierte Card im App-Style ohne Leuchten */}
+        {/* Inhalt Card */}
         <Animated.View style={[styles.cyberCard, { transform: [{ translateY: slideAnim }] }]}>
           
-          {/* Header der Card mit Schliessen-Button */}
+          {/* Card Header */}
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>                   Impressum</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton} activeOpacity={0.7}>
@@ -134,7 +134,7 @@ export default function ImpressumScreen({ visible, onClose }: ImpressumProps): R
   );
 }
 
-// Interface für präzise TypeScript-Typisierung des Stylesheets
+// Style Typen
 interface Styles {
   modalOverlay: ViewStyle;
   absoluteClose: ViewStyle;
@@ -153,7 +153,7 @@ interface Styles {
 const styles = StyleSheet.create<Styles>({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(8, 9, 17, 0.85)', // Matcht euren Backdrop-Wert
+    backgroundColor: 'rgba(8, 9, 17, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -168,12 +168,12 @@ const styles = StyleSheet.create<Styles>({
   cyberCard: {
     width: width * 0.88,
     maxHeight: height * 0.65,
-    backgroundColor: '#151523', // Euer Standard-Panel Hintergrund
+    backgroundColor: '#151523',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#242439', // Diskreter Rahmen eurer Kacheln
+    borderColor: '#242439',
     padding: 20,
-    // Leuchten (Shadows & Elevation) komplett entfernt
+    // Kein Glow
   },
   cardHeader: {
     flexDirection: 'row',
@@ -187,16 +187,16 @@ const styles = StyleSheet.create<Styles>({
   cardTitle: {
     fontSize: 13,
     fontWeight: '900',
-    color: '#20c8f4', // Einheitliches Cyan eurer App
+    color: '#20c8f4',
     letterSpacing: 2,
   },
   closeButton: {
     padding: 6,
     borderRadius: 8,
-    backgroundColor: '#1b1b2d', // Matcht euren secondaryButton
+    backgroundColor: '#1b1b2d',
   },
   closeButtonText: {
-    color: '#b7b5c8', // Matcht euren secondaryButtonText
+    color: '#b7b5c8',
     fontSize: 14,
     fontWeight: '900',
   },
@@ -209,14 +209,14 @@ const styles = StyleSheet.create<Styles>({
   sectionTitle: {
     fontSize: 12,
     fontWeight: '900',
-    color: '#20c8f4', // Alle Titel [01], [02] etc. einheitlich Cyan
+    color: '#20c8f4',
     letterSpacing: 1.5,
     marginBottom: 6,
   },
   bodyText: {
     fontSize: 14,
-    color: '#ffffff', // Alle Texte (auch Namen & AGBs) jetzt reinweiss
-    fontWeight: '500', // Dünnere, saubere Schriftstärke für bessere Lesbarkeit
+    color: '#ffffff',
+    fontWeight: '500',
     lineHeight: 20,
   },
   cyberDivider: {

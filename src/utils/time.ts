@@ -1,3 +1,4 @@
+// Datum kurz
 export function formatTime(value: string) {
   return new Intl.DateTimeFormat("de-CH", {
     hour: "2-digit",
@@ -7,6 +8,7 @@ export function formatTime(value: string) {
   }).format(new Date(value));
 }
 
+// Timer Text
 export function formatCountdown(ms: number) {
   const safeMs = Math.max(0, ms);
   const totalSeconds = Math.floor(safeMs / 1000);
@@ -17,6 +19,7 @@ export function formatCountdown(ms: number) {
   return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+// Minuten pruefe
 export function parseMinutes(value: string) {
   const parsed = Number.parseInt(value.trim(), 10);
   if (Number.isNaN(parsed) || parsed < 1) {
