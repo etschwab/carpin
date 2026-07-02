@@ -175,7 +175,9 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingVertical: 14,
     position: "absolute",
-    right: 18
+    right: 18,
+    zIndex: 20,
+    elevation: 20
   },
   wideMapPrimaryButtonText: {
     color: "#071018",
@@ -190,7 +192,9 @@ export const styles = StyleSheet.create({
     gap: 7,
     left: 18,
     maxWidth: 310,
-    position: "absolute"
+    position: "absolute",
+    zIndex: 20,
+    elevation: 20
   },
   wideMapActionButton: {
     backgroundColor: "rgba(17, 17, 29, 0.92)",

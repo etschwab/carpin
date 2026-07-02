@@ -464,14 +464,20 @@ export function DashboardScreen({
           {parkingSpot ? (
             <>
               <TouchableOpacity style={styles.wideMapActionButton} onPress={openDescriptionModal}>
-                <Text style={styles.wideMapActionButtonText}>Beschreibung</Text>
+                <Text style={styles.wideMapActionButtonText}>Beschreibung bearbeiten</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.wideMapActionButton}
-                onPress={parkingSpot.photoUri ? onShowPhoto : () => onPickPhoto("camera")}
-              >
-                <Text style={styles.wideMapActionButtonText}>{parkingSpot.photoUri ? "Foto zeigen" : "Foto"}</Text>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("camera")}>
+                <Text style={styles.wideMapActionButtonText}>Foto aufnehmen</Text>
               </TouchableOpacity>
+              {parkingSpot.photoUri ? (
+                <TouchableOpacity style={styles.wideMapActionButton} onPress={onShowPhoto}>
+                  <Text style={styles.wideMapActionButtonText}>Foto anzeigen</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("library")}>
+                  <Text style={styles.wideMapActionButtonText}>Galerie</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity style={styles.wideMapActionButton} onPress={onOpenTimer}>
                 <Text style={styles.wideMapActionButtonText}>Timer</Text>
               </TouchableOpacity>
@@ -485,14 +491,22 @@ export function DashboardScreen({
           ) : (
             <>
               <TouchableOpacity style={styles.wideMapActionButton} onPress={openDescriptionModal}>
-                <Text style={styles.wideMapActionButtonText}>Beschreibung</Text>
+                <Text style={styles.wideMapActionButtonText}>
+                  {parkingDescription ? "Beschreibung bearbeiten" : "Beschreibung hinzufügen"}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("camera")}>
-                <Text style={styles.wideMapActionButtonText}>Foto</Text>
+                <Text style={styles.wideMapActionButtonText}>Foto aufnehmen</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("library")}>
-                <Text style={styles.wideMapActionButtonText}>Galerie</Text>
-              </TouchableOpacity>
+              {pendingPhotoUri ? (
+                <TouchableOpacity style={styles.wideMapActionButton} onPress={onShowPhoto}>
+                  <Text style={styles.wideMapActionButtonText}>Foto anzeigen</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("library")}>
+                  <Text style={styles.wideMapActionButtonText}>Galerie</Text>
+                </TouchableOpacity>
+              )}
             </>
           )}
         </View>
