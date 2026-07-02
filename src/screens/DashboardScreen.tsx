@@ -8,16 +8,18 @@ import { FullInfoTile } from "../components/FullInfoTile";
 import { Metric } from "../components/Metric";
 import { SHEET_HEIGHTS } from "../constants/appConstants";
 import { styles } from "../styles/appStyles";
-import type { Coordinate, ParkingSpot, PhotoSource, SheetMode, Vehicle } from "../types/parking";
+import type { Coordinate, CustomMapMarker, ParkingSpot, PhotoSource, SheetMode, Vehicle } from "../types/parking";
 import { formatCountdown, formatTime } from "../utils/time";
 
 type DashboardScreenProps = {
   bottomSheetAnimatedStyle: { height: Animated.Value };
+  customMarkers: CustomMapMarker[];
   currentAddressLabel: string;
   currentLocation: Coordinate | null;
   isLocating: boolean;
   isSavingSpot: boolean;
   mapRegion: Region;
+  onAddCustomMarker: (coordinate: Coordinate, name: string, color: string) => void;
   onChangeParkingDescription: (value: string) => void;
   onClearParkingSpot: () => void;
   onOpenRoute: () => void;
@@ -144,11 +146,13 @@ function VehicleIconSelector({
 
 export function DashboardScreen({
   bottomSheetAnimatedStyle,
+  customMarkers,
   currentAddressLabel,
   currentLocation,
   isLocating,
   isSavingSpot,
   mapRegion,
+  onAddCustomMarker,
   onChangeParkingDescription,
   onClearParkingSpot,
   onOpenRoute,
@@ -439,8 +443,10 @@ export function DashboardScreen({
   return (
     <View style={styles.mapScreen}>
       <CarPinMap
+        customMarkers={customMarkers}
         currentLocation={currentLocation}
         isLocating={isLocating}
+        onAddCustomMarker={onAddCustomMarker}
         onRefreshLocation={onRefreshCurrentLocation}
         parkingSpot={parkingSpot}
         region={mapRegion}
