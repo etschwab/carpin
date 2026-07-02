@@ -28,6 +28,7 @@ type DashboardScreenProps = {
   currentLocation: Coordinate | null;
   isLocating: boolean;
   isSavingSpot: boolean;
+  isWideLayout?: boolean;
   mapRegion: Region;
   onChangeParkingDescription: (value: string) => void;
   onClearParkingSpot: () => void;
@@ -134,6 +135,7 @@ export function DashboardScreen({
   currentLocation,
   isLocating,
   isSavingSpot,
+  isWideLayout = false,
   mapRegion,
   onChangeParkingDescription,
   onClearParkingSpot,
@@ -433,6 +435,76 @@ export function DashboardScreen({
           )}
         </View>
       </>
+    );
+  }
+
+  if (isWideLayout) {
+    return (
+      <View style={styles.wideMapScreen}>
+        <CarPinMap
+          currentLocation={currentLocation}
+          isLocating={isLocating}
+          onRefreshLocation={onRefreshCurrentLocation}
+          parkingSpot={parkingSpot}
+          region={mapRegion}
+        />
+
+        <TouchableOpacity
+          style={styles.wideMapPrimaryButton}
+          onPress={parkingSpot ? onOpenRoute : onSaveParkingSpot}
+          disabled={isSavingSpot}
+        >
+          <MaterialCommunityIcons color="#071018" name={parkingSpot ? "navigation-variant" : "map-marker-plus"} size={22} />
+          <Text style={styles.wideMapPrimaryButtonText}>
+            {parkingSpot ? "Route starten" : isSavingSpot ? "Speichere..." : "Parkplatz speichern"}
+          </Text>
+        </TouchableOpacity>
+
+        <Modal
+          animationType="slide"
+          onRequestClose={() => setIsDescriptionModalVisible(false)}
+          transparent
+          visible={isDescriptionModalVisible}
+        >
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.customTimerModalBackdrop}
+          >
+            <View style={styles.customTimerModal}>
+              <View style={styles.customTimerModalHeader}>
+                <View>
+                  <Text style={styles.customTimerModalTitle}>
+                    {parkingSpot ? "Beschreibung bearbeiten" : "Beschreibung hinzufügen"}
+                  </Text>
+                  <Text style={styles.customTimerModalMeta}>Speichere eine kurze Notiz zu deinem Parkplatz.</Text>
+                </View>
+                <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsDescriptionModalVisible(false)}>
+                  <Text style={styles.modalCloseButtonText}>×</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.customTimerFieldGroup}>
+                <Text style={styles.customTimerFieldLabel}>Beschreibung</Text>
+                <TextInput
+                  multiline
+                  numberOfLines={4}
+                  onChangeText={setDescriptionDraft}
+                  placeholder="z.B. Parkhaus, 2. Stock, Platz 234"
+                  placeholderTextColor="#777589"
+                  returnKeyType="done"
+                  style={[styles.customTimerModalInput, styles.descriptionModalInput]}
+                  textAlignVertical="top"
+                  value={descriptionDraft}
+                />
+              </View>
+
+              <TouchableOpacity style={styles.customTimerSubmitButton} onPress={submitDescription}>
+                <Text style={styles.customTimerSubmitButtonText}>OK speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+      </View>
     );
   }
 
