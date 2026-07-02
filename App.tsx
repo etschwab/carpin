@@ -785,6 +785,7 @@ export default function App() {
       return (
         <DashboardScreen
           bottomSheetAnimatedStyle={bottomSheetAnimatedStyle}
+          customMarkers={customMarkers}
           currentAddressLabel={currentAddressLabel}
           currentLocation={currentLocation}
           isLocating={isLocating}
@@ -792,6 +793,7 @@ export default function App() {
           isWideLayout={isWideScreen}
           mapRegion={mapRegion}
           onChangeParkingDescription={setParkingDescription}
+          onAddCustomMarker={addCustomMarker}
           onClearParkingSpot={clearParkingSpot}
           onOpenRoute={openRoute}
           onOpenTimer={() => setScreen("timer")}

@@ -530,8 +530,10 @@ export function DashboardScreen({
         {renderWideDashboardPanel()}
         <View style={styles.wideDashboardMapPane}>
           <CarPinMap
+            customMarkers={customMarkers}
             currentLocation={currentLocation}
             isLocating={isLocating}
+            onAddCustomMarker={onAddCustomMarker}
             onRefreshLocation={onRefreshCurrentLocation}
             parkingSpot={parkingSpot}
             region={mapRegion}
@@ -590,8 +592,10 @@ export function DashboardScreen({
     return (
       <View style={styles.wideMapScreen}>
         <CarPinMap
+          customMarkers={customMarkers}
           currentLocation={currentLocation}
           isLocating={isLocating}
+          onAddCustomMarker={onAddCustomMarker}
           onRefreshLocation={onRefreshCurrentLocation}
           parkingSpot={parkingSpot}
           region={mapRegion}
