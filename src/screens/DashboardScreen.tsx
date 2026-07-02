@@ -1,11 +1,22 @@
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRef } from "react";
-import { Animated, GestureResponderHandlers, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useRef, useState } from "react";
+import {
+  Animated,
+  GestureResponderHandlers,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
 import type { Region } from "react-native-maps";
 
 import { CarPinMap } from "../components/CarPinMap";
 import { FullInfoTile } from "../components/FullInfoTile";
-import { Metric } from "../components/Metric";
 import { SHEET_HEIGHTS } from "../constants/appConstants";
 import { styles } from "../styles/appStyles";
 import type { Coordinate, ParkingSpot, PhotoSource, SheetMode, Vehicle } from "../types/parking";
@@ -29,6 +40,7 @@ type DashboardScreenProps = {
   onShareParking: () => void;
   onShowPhoto: () => void;
   onToggleSheetMode: () => void;
+  onUpdateParkingSpotDescription: (value: string) => void;
   parkingDescription: string;
   parkingSpot: ParkingSpot | null;
   pendingPhotoUri: string | null;
@@ -41,32 +53,6 @@ type DashboardScreenProps = {
   timerSpotMatchesActiveSpot: boolean;
   vehicles: Vehicle[];
 };
-
-function ParkingDescriptionInput({
-  parkingDescription,
-  onChangeParkingDescription,
-  onFocus
-}: {
-  parkingDescription: string;
-  onChangeParkingDescription: (value: string) => void;
-  onFocus?: () => void;
-}) {
-  return (
-    <>
-      <Text style={styles.sectionLabel}>Beschreibung</Text>
-      <TextInput
-        multiline
-        numberOfLines={3}
-        onChangeText={onChangeParkingDescription}
-        onFocus={onFocus}
-        placeholder="z.B. Parkhaus, 2. Stock, Platz 234"
-        placeholderTextColor="#777589"
-        style={[styles.input, styles.parkingDescriptionInput]}
-        value={parkingDescription}
-      />
-    </>
-  );
-}
 
 function getVehicleIcon(vehicle: Vehicle | undefined) {
   const checkName = (vehicle?.type || vehicle?.name || "").toLowerCase().trim();
@@ -160,6 +146,7 @@ export function DashboardScreen({
   onShareParking,
   onShowPhoto,
   onToggleSheetMode,
+  onUpdateParkingSpotDescription,
   parkingDescription,
   parkingSpot,
   pendingPhotoUri,
@@ -175,6 +162,8 @@ export function DashboardScreen({
   const vehicleIcon = getVehicleIcon(selectedVehicle);
   const VehicleInfoIcon = vehicleIcon.IconComponent;
   const fullSheetScrollRef = useRef<ScrollView | null>(null);
+  const [isDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
+  const [descriptionDraft, setDescriptionDraft] = useState(parkingDescription);
   const sheetHeight = bottomSheetAnimatedStyle.height;
   const compactContentAnimatedStyle = {
     opacity: sheetHeight.interpolate({
@@ -260,6 +249,20 @@ export function DashboardScreen({
     );
   }
 
+  function openDescriptionModal() {
+    setDescriptionDraft(parkingSpot?.description ?? parkingDescription);
+    setIsDescriptionModalVisible(true);
+  }
+
+  function submitDescription() {
+    if (parkingSpot) {
+      onUpdateParkingSpotDescription(descriptionDraft);
+    } else {
+      onChangeParkingDescription(descriptionDraft.trim());
+    }
+    setIsDescriptionModalVisible(false);
+  }
+
   function renderMidContent() {
     if (parkingSpot) {
       return (
@@ -271,12 +274,6 @@ export function DashboardScreen({
               {selectedVehicle?.name ?? "Fahrzeug"} · Heute, {formatTime(parkingSpot.savedAt).split(",").pop()?.trim()}
             </Text>
             {parkingSpot.description ? <Text style={styles.parkingDescriptionText}>{parkingSpot.description}</Text> : null}
-          </View>
-
-          <View style={styles.metricsRow}>
-            <Metric label="Timer" value={timerSpotMatchesActiveSpot && timerIsActive ? formatCountdown(remainingMs) : "nicht gesetzt"} />
-            <Metric label="Foto" value={parkingSpot.photoUri ? "gespeichert" : "offen"} />
-            <Metric label="Route" value="Apple Maps" />
           </View>
 
           <View style={styles.actionRow}>
@@ -296,10 +293,6 @@ export function DashboardScreen({
               <Text style={styles.primaryButtonText}>Zurück zum Auto</Text>
             </TouchableOpacity>
           </View>
-
-          <TouchableOpacity style={styles.timerShortcut} onPress={onOpenTimer}>
-            <Text style={styles.timerShortcutText}>Parktimer für diesen Parkplatz setzen</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity style={styles.timerShortcut} onPress={onShareParking}>
             <Text style={styles.timerShortcutText}>Parking teilen</Text>
@@ -391,6 +384,9 @@ export function DashboardScreen({
                   </TouchableOpacity>
                 )}
               </View>
+              <TouchableOpacity style={styles.descriptionEditButton} onPress={openDescriptionModal}>
+                <Text style={styles.descriptionEditButtonText}>Beschreibung bearbeiten</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.timerShortcut} onPress={onOpenTimer}>
                 <Text style={styles.timerShortcutText}>Parktimer für diesen Parkplatz setzen</Text>
               </TouchableOpacity>
@@ -404,13 +400,17 @@ export function DashboardScreen({
           ) : (
             <>
               <VehicleIconSelector onSelectVehicle={onSelectVehicle} selectedVehicleId={selectedVehicleId} vehicles={vehicles} />
-              <ParkingDescriptionInput
-                parkingDescription={parkingDescription}
-                onChangeParkingDescription={onChangeParkingDescription}
-                onFocus={() => {
-                  setTimeout(() => fullSheetScrollRef.current?.scrollTo({ y: 330, animated: true }), 120);
-                }}
-              />
+              <TouchableOpacity style={styles.descriptionOpenButton} onPress={openDescriptionModal}>
+                <View style={styles.customTimerOpenTextWrap}>
+                  <Text style={styles.customTimerOpenLabel}>
+                    {parkingDescription ? "Beschreibung bearbeiten" : "Beschreibung hinzufügen"}
+                  </Text>
+                  <Text style={styles.customTimerOpenMeta}>
+                    {parkingDescription || "Ort, Etage oder Parkplatznummer ergänzen"}
+                  </Text>
+                </View>
+                <Text style={styles.customTimerOpenIcon}>+</Text>
+              </TouchableOpacity>
               <Text style={styles.sectionLabel}>Foto</Text>
               <View style={styles.actionRow}>
                 <TouchableOpacity style={styles.darkButton} onPress={() => onPickPhoto("camera")}>
@@ -485,6 +485,51 @@ export function DashboardScreen({
           </Animated.ScrollView>
         </View>
       </Animated.View>
+
+      <Modal
+        animationType="slide"
+        onRequestClose={() => setIsDescriptionModalVisible(false)}
+        transparent
+        visible={isDescriptionModalVisible}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.customTimerModalBackdrop}
+        >
+          <View style={styles.customTimerModal}>
+            <View style={styles.customTimerModalHeader}>
+              <View>
+                <Text style={styles.customTimerModalTitle}>
+                  {parkingSpot ? "Beschreibung bearbeiten" : "Beschreibung hinzufügen"}
+                </Text>
+                <Text style={styles.customTimerModalMeta}>Speichere eine kurze Notiz zu deinem Parkplatz.</Text>
+              </View>
+              <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsDescriptionModalVisible(false)}>
+                <Text style={styles.modalCloseButtonText}>×</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.customTimerFieldGroup}>
+              <Text style={styles.customTimerFieldLabel}>Beschreibung</Text>
+              <TextInput
+                multiline
+                numberOfLines={4}
+                onChangeText={setDescriptionDraft}
+                placeholder="z.B. Parkhaus, 2. Stock, Platz 234"
+                placeholderTextColor="#777589"
+                returnKeyType="done"
+                style={[styles.customTimerModalInput, styles.descriptionModalInput]}
+                textAlignVertical="top"
+                value={descriptionDraft}
+              />
+            </View>
+
+            <TouchableOpacity style={styles.customTimerSubmitButton} onPress={submitDescription}>
+              <Text style={styles.customTimerSubmitButtonText}>OK speichern</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
