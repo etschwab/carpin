@@ -13,6 +13,7 @@ import { TabButton } from "./src/components/TabButton";
 import {
   DEFAULT_VEHICLES,
   FALLBACK_COORDINATE,
+  MARKER_COLOR_OPTIONS,
   MAX_PARKING_HISTORY_ITEMS,
   SHEET_HEIGHTS,
   STORAGE_KEYS,
@@ -24,7 +25,7 @@ import { PhotoModal } from "./src/screens/PhotoModal";
 import { TimerScreen } from "./src/screens/TimerScreen";
 import { VehiclesScreen } from "./src/screens/VehiclesScreen";
 import { styles } from "./src/styles/appStyles";
-import type { Coordinate, ParkingHistoryItem, ParkingSpot, PhotoSource, Screen, SheetMode, Vehicle, VehicleType } from "./src/types/parking";
+import type { Coordinate, CustomMapMarker, ParkingHistoryItem, ParkingSpot, PhotoSource, Screen, SheetMode, Vehicle, VehicleType } from "./src/types/parking";
 import { reverseGeocode } from "./src/utils/location";
 import { formatTime, parseMinutes } from "./src/utils/time";
 
@@ -70,6 +71,7 @@ export default function App() {
   const [selectedVehicleId, setSelectedVehicleId] = useState(DEFAULT_VEHICLES[0].id);
   const [parkingSpot, setParkingSpot] = useState<ParkingSpot | null>(null);
   const [parkingHistory, setParkingHistory] = useState<ParkingHistoryItem[]>([]);
+  const [customMarkers, setCustomMarkers] = useState<CustomMapMarker[]>([]);
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [currentLocationAddress, setCurrentLocationAddress] = useState<string | null>(null);
   const [parkingDescription, setParkingDescription] = useState("");
@@ -95,11 +97,12 @@ export default function App() {
 
   useEffect(() => {
     async function loadState() {
-      const [storedVehicles, storedParkingSpot, storedParkingHistory, storedTimerEnd, storedTimerStartedAt, storedTimerSpotId] =
+      const [storedVehicles, storedParkingSpot, storedParkingHistory, storedCustomMarkers, storedTimerEnd, storedTimerStartedAt, storedTimerSpotId] =
         await Promise.all([
           AsyncStorage.getItem(STORAGE_KEYS.vehicles),
           AsyncStorage.getItem(STORAGE_KEYS.parkingSpot),
           AsyncStorage.getItem(STORAGE_KEYS.parkingHistory),
+          AsyncStorage.getItem(STORAGE_KEYS.customMarkers),
           AsyncStorage.getItem(STORAGE_KEYS.timerEnd),
           AsyncStorage.getItem(STORAGE_KEYS.timerStartedAt),
           AsyncStorage.getItem(STORAGE_KEYS.timerSpotId)
@@ -117,6 +120,10 @@ export default function App() {
 
       if (storedParkingHistory) {
         setParkingHistory(JSON.parse(storedParkingHistory) as ParkingHistoryItem[]);
+      }
+
+      if (storedCustomMarkers) {
+        setCustomMarkers(JSON.parse(storedCustomMarkers) as CustomMapMarker[]);
       }
 
       if (storedTimerEnd) {
@@ -156,6 +163,10 @@ export default function App() {
   useEffect(() => {
     AsyncStorage.setItem(STORAGE_KEYS.parkingHistory, JSON.stringify(parkingHistory)).catch(() => undefined);
   }, [parkingHistory]);
+
+  useEffect(() => {
+    AsyncStorage.setItem(STORAGE_KEYS.customMarkers, JSON.stringify(customMarkers)).catch(() => undefined);
+  }, [customMarkers]);
 
   useEffect(() => {
     if (timerEnd) {
@@ -440,6 +451,25 @@ export default function App() {
     setParkingHistory((currentHistory) =>
       currentHistory.map((historySpot) => (historySpot.id === spot.id ? spot : historySpot))
     );
+  }
+
+  function addCustomMarker(coordinate: Coordinate, name: string, color: string) {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      return;
+    }
+
+    const nextColor = MARKER_COLOR_OPTIONS.includes(color as (typeof MARKER_COLOR_OPTIONS)[number]) ? color : MARKER_COLOR_OPTIONS[0];
+    const nextMarker: CustomMapMarker = {
+      id: `marker-${Date.now()}`,
+      latitude: coordinate.latitude,
+      longitude: coordinate.longitude,
+      color: nextColor,
+      createdAt: new Date().toISOString(),
+      name: trimmedName
+    };
+
+    setCustomMarkers((currentMarkers) => [nextMarker, ...currentMarkers]);
   }
 
   async function saveParkingSpot() {
@@ -903,10 +933,12 @@ export default function App() {
         {screen === "dashboard" && (
           <DashboardScreen
             bottomSheetAnimatedStyle={bottomSheetAnimatedStyle}
+            customMarkers={customMarkers}
             currentAddressLabel={currentAddressLabel}
             currentLocation={currentLocation}
             isLocating={isLocating}
             isSavingSpot={isSavingSpot}
+            onAddCustomMarker={addCustomMarker}
             mapRegion={mapRegion}
             onChangeParkingDescription={setParkingDescription}
             onClearParkingSpot={clearParkingSpot}

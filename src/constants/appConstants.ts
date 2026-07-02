@@ -1,11 +1,12 @@
 import { Dimensions } from "react-native";
 
-import type { Coordinate, SheetMode, Vehicle, VehicleType } from "../types/parking";
+import type { Coordinate, MarkerDisplayMode, SheetMode, Vehicle, VehicleType } from "../types/parking";
 
 export const STORAGE_KEYS = {
   vehicles: "carpin:vehicles",
   parkingSpot: "carpin:parkingSpot",
   parkingHistory: "carpin:parkingHistory",
+  customMarkers: "carpin:customMarkers",
   timerEnd: "carpin:timerEnd",
   timerStartedAt: "carpin:timerStartedAt",
   timerSpotId: "carpin:timerSpotId"
@@ -15,6 +16,8 @@ export const TIMER_REMINDER_MINUTES = [60, 30, 10, 5] as const;
 export const MAX_PARKING_HISTORY_ITEMS = 30;
 
 export const VEHICLE_TYPES: VehicleType[] = ["Auto", "Fahrrad", "Motorrad", "Scooter"];
+export const MARKER_DISPLAY_MODES: MarkerDisplayMode[] = ["labels", "icons", "hidden"];
+export const MARKER_COLOR_OPTIONS = ["#20c8f4", "#4ade80", "#f59e0b", "#ef4444", "#a855f7", "#f97316"] as const;
 
 export const DEFAULT_VEHICLES: Vehicle[] = [
   { id: "vehicle-auto", name: "VW Golf", type: "Auto" },
