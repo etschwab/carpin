@@ -13,7 +13,6 @@ import { formatCountdown, formatTime } from "../utils/time";
 
 type DashboardScreenProps = {
   bottomSheetAnimatedStyle: { height: Animated.Value };
-  coordinateLabel: string;
   currentAddressLabel: string;
   currentLocation: Coordinate | null;
   isLocating: boolean;
@@ -145,7 +144,6 @@ function VehicleIconSelector({
 
 export function DashboardScreen({
   bottomSheetAnimatedStyle,
-  coordinateLabel,
   currentAddressLabel,
   currentLocation,
   isLocating,
@@ -355,7 +353,7 @@ export function DashboardScreen({
         </View>
 
         <View style={styles.fullIconGrid}>
-          <FullInfoTile iconElement={getInfoTileIcon("location")} label="Standort" value={coordinateLabel} />
+          <FullInfoTile iconElement={getInfoTileIcon("location")} label="Standort" value={currentAddressLabel} />
           <FullInfoTile
             iconElement={<VehicleInfoIcon color="#20c8f4" name={vehicleIcon.iconName} size={18} />}
             label="Fahrzeug"
