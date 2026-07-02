@@ -34,6 +34,16 @@ function headingDelta(a: number, b: number) {
   return difference > 180 ? 360 - difference : difference;
 }
 
+function isCoordinateNearTarget(pressedCoordinate: Coordinate, targetCoordinate: Coordinate, latitudeDelta: number) {
+  const latitudeThreshold = Math.max(latitudeDelta * 0.08, 0.00035);
+  const longitudeThreshold = Math.max(latitudeDelta * 0.08, 0.00035);
+
+  return (
+    Math.abs(pressedCoordinate.latitude - targetCoordinate.latitude) <= latitudeThreshold &&
+    Math.abs(pressedCoordinate.longitude - targetCoordinate.longitude) <= longitudeThreshold
+  );
+}
+
 function getNextMarkerMode(mode: MarkerDisplayMode): MarkerDisplayMode {
   if (mode === "labels") {
     return "icons";
@@ -136,7 +146,14 @@ export function CarPinMap({
 
   function handleMapPress(event: MapPressEvent) {
     const { latitude, longitude } = event.nativeEvent.coordinate;
-    setPendingMarkerCoordinate({ latitude, longitude });
+    const pressedCoordinate = { latitude, longitude };
+
+    if (pendingMarkerCoordinate && isCoordinateNearTarget(pressedCoordinate, pendingMarkerCoordinate, visibleLatitudeDelta)) {
+      handleOpenMarkerModal();
+      return;
+    }
+
+    setPendingMarkerCoordinate(pressedCoordinate);
     setIsMarkerModalVisible(false);
     setIsActionMenuOpen(false);
   }
@@ -225,7 +242,7 @@ export function CarPinMap({
           ))}
 
         {pendingMarkerCoordinate ? (
-          <Marker coordinate={pendingMarkerCoordinate} onPress={handleOpenMarkerModal}>
+          <Marker coordinate={pendingMarkerCoordinate}>
             <View style={customStyles.pendingMarkerWrap}>
               <MaterialCommunityIcons name="map-marker-plus" size={30} color="#f7f8ff" />
             </View>
