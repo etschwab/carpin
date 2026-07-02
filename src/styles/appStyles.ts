@@ -11,6 +11,9 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8
   },
+  hidden: {
+    display: "none"
+  },
   wideSafeArea: {
     backgroundColor: "#080911",
     flex: 1
@@ -27,8 +30,8 @@ export const styles = StyleSheet.create({
     borderBottomLeftRadius: 22,
     borderRightWidth: 1,
     borderTopLeftRadius: 22,
-    padding: 14,
-    width: 252
+    padding: 12,
+    width: 204
   },
   wideBrandRow: {
     alignItems: "center",
@@ -38,7 +41,7 @@ export const styles = StyleSheet.create({
   },
   wideBrandTitle: {
     color: "#f7f8ff",
-    fontSize: 21,
+    fontSize: 19,
     fontWeight: "900"
   },
   wideNavList: {
@@ -48,8 +51,8 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 14,
     flexDirection: "row",
-    gap: 12,
-    paddingHorizontal: 16,
+    gap: 10,
+    paddingHorizontal: 12,
     paddingVertical: 11
   },
   wideNavButtonActive: {
@@ -57,7 +60,7 @@ export const styles = StyleSheet.create({
   },
   wideNavText: {
     color: "#8f8da0",
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "800"
   },
   wideNavTextActive: {
@@ -164,6 +167,130 @@ export const styles = StyleSheet.create({
   wideMapScreen: {
     flex: 1,
     position: "relative"
+  },
+  wideDashboard: {
+    backgroundColor: "#10101b",
+    flex: 1,
+    flexDirection: "row"
+  },
+  wideDashboardPanel: {
+    backgroundColor: "#151520",
+    borderRightColor: "#28283c",
+    borderRightWidth: 1,
+    flexBasis: 292,
+    flexGrow: 0,
+    flexShrink: 0
+  },
+  wideDashboardPanelContent: {
+    padding: 14,
+    paddingBottom: 18
+  },
+  wideDashboardMapPane: {
+    flex: 1,
+    minWidth: 0
+  },
+  widePanelEyebrow: {
+    color: "#20c8f4",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  widePanelTitle: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+    lineHeight: 23,
+    marginTop: 8
+  },
+  widePanelMeta: {
+    color: "#9aa8b6",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 6
+  },
+  widePanelDescription: {
+    backgroundColor: "#0e3448",
+    borderColor: "#176783",
+    borderRadius: 12,
+    borderWidth: 1,
+    color: "#d8e7f1",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 10,
+    padding: 10
+  },
+  widePanelStats: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 12
+  },
+  widePanelStat: {
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 12,
+    borderWidth: 1,
+    flex: 1,
+    padding: 10
+  },
+  widePanelStatLabel: {
+    color: "#777589",
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  widePanelStatValue: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 5
+  },
+  widePanelPrimaryButton: {
+    alignItems: "center",
+    backgroundColor: "#20c8f4",
+    borderRadius: 14,
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "center",
+    marginTop: 12,
+    paddingVertical: 12
+  },
+  widePanelPrimaryButtonText: {
+    color: "#071018",
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  widePanelSectionLabel: {
+    color: "#777589",
+    fontSize: 11,
+    fontWeight: "900",
+    marginTop: 14,
+    textTransform: "uppercase"
+  },
+  widePanelActionGrid: {
+    gap: 8,
+    marginTop: 8
+  },
+  widePanelActionButton: {
+    alignItems: "center",
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 10
+  },
+  widePanelActionText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900",
+    textAlign: "center"
+  },
+  widePanelDangerButton: {
+    backgroundColor: "#2b1b23",
+    borderColor: "#6f2b3c"
+  },
+  widePanelDangerText: {
+    color: "#ff8a9a"
   },
   wideMapPrimaryButton: {
     alignItems: "center",

@@ -861,7 +861,7 @@ export default function App() {
 
             <View style={styles.wideSidebarSpacer} />
 
-            <View style={styles.wideStatusCard}>
+            <View style={[styles.wideStatusCard, screen === "dashboard" && styles.hidden]}>
               <Text style={styles.wideStatusEyebrow}>{parkingSpot ? "Aktiv" : "Bereit"}</Text>
               <Text style={styles.wideStatusTitle}>{parkingSpot ? parkedVehicle?.name ?? "Fahrzeug" : selectedVehicle?.name ?? "Fahrzeug"}</Text>
               <Text style={styles.wideStatusMeta}>
