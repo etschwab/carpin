@@ -384,14 +384,8 @@ export function DashboardScreen({
                   </TouchableOpacity>
                 )}
               </View>
-              <TouchableOpacity style={styles.descriptionOpenButton} onPress={openDescriptionModal}>
-                <View style={styles.customTimerOpenTextWrap}>
-                  <Text style={styles.customTimerOpenLabel}>Beschreibung bearbeiten</Text>
-                  <Text style={styles.customTimerOpenMeta}>
-                    {parkingSpot.description || "Notiz zu diesem Parkplatz ergänzen"}
-                  </Text>
-                </View>
-                <Text style={styles.customTimerOpenIcon}>+</Text>
+              <TouchableOpacity style={styles.descriptionEditButton} onPress={openDescriptionModal}>
+                <Text style={styles.descriptionEditButtonText}>Beschreibung bearbeiten</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.timerShortcut} onPress={onOpenTimer}>
                 <Text style={styles.timerShortcutText}>Parktimer für diesen Parkplatz setzen</Text>

@@ -647,6 +647,20 @@ export const styles = StyleSheet.create({
     marginTop: 18,
     padding: 15
   },
+  descriptionEditButton: {
+    alignItems: "center",
+    backgroundColor: "#151523",
+    borderColor: "#242439",
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 10,
+    paddingVertical: 10
+  },
+  descriptionEditButtonText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "900"
+  },
   customTimerOpenTextWrap: {
     flex: 1
   },
