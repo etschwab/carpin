@@ -5,7 +5,6 @@ import type { Region } from "react-native-maps";
 
 import { CarPinMap } from "../components/CarPinMap";
 import { FullInfoTile } from "../components/FullInfoTile";
-import { Metric } from "../components/Metric";
 import { SHEET_HEIGHTS } from "../constants/appConstants";
 import { styles } from "../styles/appStyles";
 import type { Coordinate, ParkingSpot, PhotoSource, SheetMode, Vehicle } from "../types/parking";
@@ -273,12 +272,6 @@ export function DashboardScreen({
             {parkingSpot.description ? <Text style={styles.parkingDescriptionText}>{parkingSpot.description}</Text> : null}
           </View>
 
-          <View style={styles.metricsRow}>
-            <Metric label="Timer" value={timerSpotMatchesActiveSpot && timerIsActive ? formatCountdown(remainingMs) : "nicht gesetzt"} />
-            <Metric label="Foto" value={parkingSpot.photoUri ? "gespeichert" : "offen"} />
-            <Metric label="Route" value="Apple Maps" />
-          </View>
-
           <View style={styles.actionRow}>
             <TouchableOpacity style={styles.darkButton} onPress={() => onPickPhoto("camera")}>
               <Text style={styles.darkButtonText}>Foto aufnehmen</Text>
@@ -296,10 +289,6 @@ export function DashboardScreen({
               <Text style={styles.primaryButtonText}>Zurück zum Auto</Text>
             </TouchableOpacity>
           </View>
-
-          <TouchableOpacity style={styles.timerShortcut} onPress={onOpenTimer}>
-            <Text style={styles.timerShortcutText}>Parktimer für diesen Parkplatz setzen</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity style={styles.timerShortcut} onPress={onShareParking}>
             <Text style={styles.timerShortcutText}>Parking teilen</Text>
