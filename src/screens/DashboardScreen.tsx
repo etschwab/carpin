@@ -40,6 +40,7 @@ type DashboardScreenProps = {
   onShareParking: () => void;
   onShowPhoto: () => void;
   onToggleSheetMode: () => void;
+  onUpdateParkingSpotDescription: (value: string) => void;
   parkingDescription: string;
   parkingSpot: ParkingSpot | null;
   pendingPhotoUri: string | null;
@@ -145,6 +146,7 @@ export function DashboardScreen({
   onShareParking,
   onShowPhoto,
   onToggleSheetMode,
+  onUpdateParkingSpotDescription,
   parkingDescription,
   parkingSpot,
   pendingPhotoUri,
@@ -248,12 +250,16 @@ export function DashboardScreen({
   }
 
   function openDescriptionModal() {
-    setDescriptionDraft(parkingDescription);
+    setDescriptionDraft(parkingSpot?.description ?? parkingDescription);
     setIsDescriptionModalVisible(true);
   }
 
   function submitDescription() {
-    onChangeParkingDescription(descriptionDraft.trim());
+    if (parkingSpot) {
+      onUpdateParkingSpotDescription(descriptionDraft);
+    } else {
+      onChangeParkingDescription(descriptionDraft.trim());
+    }
     setIsDescriptionModalVisible(false);
   }
 
@@ -378,6 +384,15 @@ export function DashboardScreen({
                   </TouchableOpacity>
                 )}
               </View>
+              <TouchableOpacity style={styles.descriptionOpenButton} onPress={openDescriptionModal}>
+                <View style={styles.customTimerOpenTextWrap}>
+                  <Text style={styles.customTimerOpenLabel}>Beschreibung bearbeiten</Text>
+                  <Text style={styles.customTimerOpenMeta}>
+                    {parkingSpot.description || "Notiz zu diesem Parkplatz ergänzen"}
+                  </Text>
+                </View>
+                <Text style={styles.customTimerOpenIcon}>+</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.timerShortcut} onPress={onOpenTimer}>
                 <Text style={styles.timerShortcutText}>Parktimer für diesen Parkplatz setzen</Text>
               </TouchableOpacity>
@@ -490,7 +505,9 @@ export function DashboardScreen({
           <View style={styles.customTimerModal}>
             <View style={styles.customTimerModalHeader}>
               <View>
-                <Text style={styles.customTimerModalTitle}>Beschreibung hinzufügen</Text>
+                <Text style={styles.customTimerModalTitle}>
+                  {parkingSpot ? "Beschreibung bearbeiten" : "Beschreibung hinzufügen"}
+                </Text>
                 <Text style={styles.customTimerModalMeta}>Speichere eine kurze Notiz zu deinem Parkplatz.</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsDescriptionModalVisible(false)}>
