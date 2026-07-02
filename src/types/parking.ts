@@ -11,6 +11,13 @@ export type Coordinate = {
   longitude: number;
 };
 
+export type CustomMapMarker = Coordinate & {
+  id: string;
+  color: string;
+  createdAt: string;
+  name: string;
+};
+
 export type ParkingSpot = Coordinate & {
   id: string;
   vehicleId: string;
@@ -25,3 +32,4 @@ export type ParkingHistoryItem = ParkingSpot;
 export type Screen = "dashboard" | "timer" | "vehicles" | "history";
 export type SheetMode = "compact" | "mid" | "full";
 export type PhotoSource = "camera" | "library";
+export type MarkerDisplayMode = "hidden" | "icons" | "labels";
