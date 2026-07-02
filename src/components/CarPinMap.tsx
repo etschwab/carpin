@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
-import { Platform, Linking, StyleSheet, TouchableOpacity, View, Text } from "react-native";
-import MapView, { Marker, Polyline, Region } from "react-native-maps";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import MapView, { Marker, Polyline, Region } from "react-native-maps";
 
 import { MAP_DARK_STYLE } from "../constants/appConstants";
 import { styles } from "../styles/appStyles";
@@ -17,12 +17,22 @@ type CarPinMapProps = {
 
 export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, parkingSpot, region }: CarPinMapProps) {
   const mapRef = useRef<MapView | null>(null);
+  const [mapHeading, setMapHeading] = useState(0);
   const parkingCoordinate = parkingSpot ? { latitude: parkingSpot.latitude, longitude: parkingSpot.longitude } : null;
   const routeCoordinates = currentLocation && parkingCoordinate ? [currentLocation, parkingCoordinate] : [];
 
   useEffect(() => {
     mapRef.current?.animateToRegion(region, 350);
   }, [region.latitude, region.longitude, region.latitudeDelta, region.longitudeDelta]);
+
+  const updateHeadingFromCamera = useCallback(async () => {
+    try {
+      const camera = await mapRef.current?.getCamera();
+      setMapHeading(camera?.heading ?? 0);
+    } catch {
+      setMapHeading(0);
+    }
+  }, []);
 
   const handleOpenSwissParkingSearch = () => {
     const query = encodeURIComponent("Parking");
@@ -34,7 +44,7 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
     });
 
     if (url) {
-      Linking.openURL(url).catch((err) => console.error("Fehler beim Öffnen der Karte:", err));
+      Linking.openURL(url).catch((err) => console.error("Fehler beim Oeffnen der Karte:", err));
     }
   };
 
@@ -47,6 +57,13 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
         style={styles.realMap}
         initialRegion={region}
         customMapStyle={MAP_DARK_STYLE}
+        onMapReady={() => {
+          updateHeadingFromCamera().catch(() => undefined);
+        }}
+        onRegionChangeComplete={() => {
+          updateHeadingFromCamera().catch(() => undefined);
+        }}
+        rotateEnabled
         showsCompass={false}
         showsMyLocationButton={false}
         showsPointsOfInterest={false}
@@ -71,32 +88,42 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
         )}
       </MapView>
 
-      {/* Container für die Buttons oben rechts */}
+      <TouchableOpacity
+        style={customStyles.compassBadge}
+        onPress={() => {
+          mapRef.current?.animateCamera({ heading: 0 }, { duration: 250 });
+          setMapHeading(0);
+        }}
+        activeOpacity={0.8}
+      >
+        <View style={[customStyles.compassArrowWrap, { transform: [{ rotate: `${mapHeading}deg` }] }]}>
+          <MaterialCommunityIcons name="navigation-variant" size={18} color="#20c8f4" />
+        </View>
+        <Text style={customStyles.compassText}>N</Text>
+      </TouchableOpacity>
+
       <View style={customStyles.buttonContainer}>
-        {/* PARKING-BUTTON */}
-        <TouchableOpacity 
-          style={customStyles.iconButton} 
-          onPress={handleOpenSwissParkingSearch}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={customStyles.iconButton} onPress={handleOpenSwissParkingSearch} activeOpacity={0.7}>
           <MaterialCommunityIcons name="parking" size={24} color={locationTextColor} />
         </TouchableOpacity>
 
-        {/* ZENTRIER-BUTTON (unter Parking) */}
-        <TouchableOpacity 
-          style={[customStyles.iconButton, { marginTop: 10 }]} 
+        <TouchableOpacity
+          style={[customStyles.iconButton, customStyles.secondaryIconButton]}
           onPress={async () => {
             const refreshedLocation = await onRefreshLocation();
             const targetLocation = refreshedLocation ?? currentLocation;
             if (targetLocation) {
-              mapRef.current?.animateToRegion({
-                latitude: targetLocation.latitude,
-                longitude: targetLocation.longitude,
-                latitudeDelta: 0.012,
-                longitudeDelta: 0.012
-              }, 350);
+              mapRef.current?.animateToRegion(
+                {
+                  latitude: targetLocation.latitude,
+                  longitude: targetLocation.longitude,
+                  latitudeDelta: 0.012,
+                  longitudeDelta: 0.012
+                },
+                350
+              );
             }
-          }} 
+          }}
           disabled={isLocating}
           activeOpacity={0.7}
         >
@@ -109,19 +136,44 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
 
 const customStyles = StyleSheet.create({
   buttonContainer: {
+    alignItems: "center",
     position: "absolute",
     right: 16,
-    top: 18,
+    top: 18
+  },
+  compassBadge: {
     alignItems: "center",
+    backgroundColor: "rgba(17, 17, 29, 0.92)",
+    borderColor: "#242439",
+    borderRadius: 18,
+    borderWidth: 1,
+    left: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    position: "absolute",
+    top: 18
+  },
+  compassArrowWrap: {
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  compassText: {
+    color: "#f7f8ff",
+    fontSize: 11,
+    fontWeight: "900",
+    marginTop: 2
   },
   iconButton: {
+    alignItems: "center",
     backgroundColor: "rgba(17, 17, 29, 0.92)",
     borderColor: "#242439",
     borderRadius: 16,
     borderWidth: 1,
     height: 48,
-    width: 48,
-    alignItems: "center",
     justifyContent: "center",
+    width: 48
   },
+  secondaryIconButton: {
+    marginTop: 10
+  }
 });
