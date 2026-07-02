@@ -225,7 +225,7 @@ export function CarPinMap({
           ))}
 
         {pendingMarkerCoordinate ? (
-          <Marker coordinate={pendingMarkerCoordinate}>
+          <Marker coordinate={pendingMarkerCoordinate} onPress={handleOpenMarkerModal}>
             <View style={customStyles.pendingMarkerWrap}>
               <MaterialCommunityIcons name="map-marker-plus" size={30} color="#f7f8ff" />
             </View>
@@ -239,20 +239,6 @@ export function CarPinMap({
         </View>
         <Text style={customStyles.compassText}>{Math.round(deviceHeading)} deg</Text>
       </View>
-
-      {pendingMarkerCoordinate ? (
-        <View style={customStyles.pendingMarkerBanner}>
-          <Text style={customStyles.pendingMarkerTitle}>Position markiert</Text>
-          <View style={customStyles.pendingMarkerActions}>
-            <TouchableOpacity style={customStyles.pendingMarkerButton} onPress={handleOpenMarkerModal} activeOpacity={0.8}>
-              <Text style={customStyles.pendingMarkerButtonText}>Marker hinzufügen</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={customStyles.pendingMarkerCancel} onPress={() => setPendingMarkerCoordinate(null)} activeOpacity={0.8}>
-              <MaterialCommunityIcons name="close" size={18} color="#b7b5c8" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      ) : null}
 
       <View style={customStyles.buttonContainer}>
         <TouchableOpacity
@@ -458,55 +444,6 @@ const customStyles = StyleSheet.create({
     backgroundColor: "rgba(32, 200, 244, 0.3)",
     borderRadius: 18,
     padding: 2
-  },
-  pendingMarkerBanner: {
-    alignItems: "center",
-    backgroundColor: "rgba(17, 17, 29, 0.96)",
-    borderColor: "#242439",
-    borderRadius: 999,
-    borderWidth: 1,
-    flexDirection: "row",
-    left: 72,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    position: "absolute",
-    right: 72,
-    top: 74
-  },
-  pendingMarkerTitle: {
-    color: "#ffffff",
-    flex: 1,
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  pendingMarkerActions: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 8
-  },
-  pendingMarkerButton: {
-    alignItems: "center",
-    backgroundColor: "#20c8f4",
-    borderRadius: 12,
-    justifyContent: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  pendingMarkerButtonText: {
-    color: "#071018",
-    fontSize: 13,
-    fontWeight: "900",
-    textAlign: "center"
-  },
-  pendingMarkerCancel: {
-    backgroundColor: "#1b1b2d",
-    borderColor: "#28283c",
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 36,
-    width: 36,
-    alignItems: "center",
-    justifyContent: "center"
   },
   modalBackdrop: {
     alignItems: "center",
