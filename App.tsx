@@ -1,10 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Animated, Linking, PanResponder, Platform, SafeAreaView, Share, View } from "react-native";
+import { Alert, Animated, Image, Linking, PanResponder, Platform, SafeAreaView, Share, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import type { Region } from "react-native-maps";
 
 import { Header } from "./src/components/Header";
@@ -26,7 +27,7 @@ import { VehiclesScreen } from "./src/screens/VehiclesScreen";
 import { styles } from "./src/styles/appStyles";
 import type { Coordinate, CustomMapMarker, ParkingHistoryItem, ParkingSpot, PhotoSource, Screen, SheetMode, Vehicle, VehicleType } from "./src/types/parking";
 import { reverseGeocode } from "./src/utils/location";
-import { parseMinutes } from "./src/utils/time";
+import { formatTime, parseMinutes } from "./src/utils/time";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -37,7 +38,34 @@ Notifications.setNotificationHandler({
   })
 });
 
+const WIDE_NAV_ITEMS: Array<{ icon: keyof typeof MaterialCommunityIcons.glyphMap; label: string; screen: Screen }> = [
+  { icon: "map-marker-outline", label: "Karte", screen: "dashboard" },
+  { icon: "car-outline", label: "Fahrzeuge", screen: "vehicles" },
+  { icon: "format-list-bulleted", label: "Verlauf", screen: "history" },
+  { icon: "timer-outline", label: "Timer", screen: "timer" }
+];
+
+function WideNavButton({
+  icon,
+  isActive,
+  label,
+  onPress
+}: {
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  isActive: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity style={[styles.wideNavButton, isActive && styles.wideNavButtonActive]} onPress={onPress}>
+      <MaterialCommunityIcons color={isActive ? "#20c8f4" : "#8f8da0"} name={icon} size={20} />
+      <Text style={[styles.wideNavText, isActive && styles.wideNavTextActive]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 export default function App() {
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const [screen, setScreen] = useState<Screen>("dashboard");
   const [vehicles, setVehicles] = useState<Vehicle[]>(DEFAULT_VEHICLES);
   const [selectedVehicleId, setSelectedVehicleId] = useState(DEFAULT_VEHICLES[0].id);
@@ -65,6 +93,7 @@ export default function App() {
   const sheetDragStartHeight = useRef(SHEET_HEIGHTS.mid);
   const sheetCurrentHeight = useRef(SHEET_HEIGHTS.mid);
   const hasShownNotificationAlertRef = useRef(false);
+  const isWideLayout = windowWidth > windowHeight || windowWidth >= 780;
 
   useEffect(() => {
     async function loadState() {
@@ -751,6 +780,145 @@ export default function App() {
     ]);
   }
 
+  function renderActiveScreen(isWideScreen = false) {
+    if (screen === "dashboard") {
+      return (
+        <DashboardScreen
+          bottomSheetAnimatedStyle={bottomSheetAnimatedStyle}
+          customMarkers={customMarkers}
+          currentAddressLabel={currentAddressLabel}
+          currentLocation={currentLocation}
+          isLocating={isLocating}
+          isSavingSpot={isSavingSpot}
+          isWideLayout={isWideScreen}
+          mapRegion={mapRegion}
+          onChangeParkingDescription={setParkingDescription}
+          onAddCustomMarker={addCustomMarker}
+          onClearParkingSpot={clearParkingSpot}
+          onOpenRoute={openRoute}
+          onOpenTimer={() => setScreen("timer")}
+          onPickPhoto={pickPhoto}
+          onRefreshCurrentLocation={() => refreshCurrentLocation(false)}
+          onSaveParkingSpot={saveParkingSpot}
+          onSelectVehicle={setSelectedVehicleId}
+          onShareParking={shareParkingSpot}
+          onShowPhoto={() => setIsPhotoVisible(true)}
+          onToggleSheetMode={toggleSheetMode}
+          onUpdateParkingSpotDescription={updateParkingSpotDescription}
+          parkingDescription={parkingDescription}
+          parkingSpot={parkingSpot}
+          pendingPhotoUri={pendingPhotoUri}
+          remainingMs={remainingMs}
+          selectedVehicle={selectedVehicle}
+          selectedVehicleId={selectedVehicleId}
+          sheetMode={sheetMode}
+          sheetPanHandlers={sheetPanResponder.panHandlers}
+          timerIsActive={timerIsActive}
+          timerSpotMatchesActiveSpot={timerSpotMatchesActiveSpot}
+          vehicles={vehicles}
+        />
+      );
+    }
+
+    if (screen === "timer") {
+      return (
+        <TimerScreen
+          activeTimerMinutes={activeTimerMinutes}
+          customTimerMinutes={customTimerMinutes}
+          onChangeCustomTimerMinutes={setCustomTimerMinutes}
+          onStartTimer={startTimer}
+          onStartTimerUntil={startTimerUntil}
+          parkingSpot={parkingSpot}
+          remainingMs={remainingMs}
+          timerEnd={timerEnd}
+          timerIsActive={timerIsActive}
+          timerSpotMatchesActiveSpot={timerSpotMatchesActiveSpot}
+          timerStartedAt={timerStartedAt}
+        />
+      );
+    }
+
+    if (screen === "vehicles") {
+      return (
+        <VehiclesScreen
+          editingVehicleId={editingVehicleId}
+          newVehicleName={newVehicleName}
+          newVehicleType={newVehicleType}
+          onChangeNewVehicleName={setNewVehicleName}
+          onChangeNewVehicleType={setNewVehicleType}
+          onDeleteVehicle={deleteVehicle}
+          onResetVehicleForm={resetVehicleForm}
+          onSelectVehicle={setSelectedVehicleId}
+          onStartEditingVehicle={startEditingVehicle}
+          onSubmitVehicleForm={submitVehicleForm}
+          selectedVehicleId={selectedVehicleId}
+          vehicles={vehicles}
+        />
+      );
+    }
+
+    return (
+      <HistoryScreen
+        history={parkingHistory}
+        onClearHistory={clearParkingHistory}
+        onDeleteHistoryItem={deleteParkingHistoryItem}
+        onOpenRoute={openRouteToSpot}
+        vehicles={vehicles}
+      />
+    );
+  }
+
+  if (isWideLayout) {
+    return (
+      <SafeAreaView style={styles.wideSafeArea}>
+        <StatusBar style="light" />
+        <View style={styles.wideShell}>
+          <View style={styles.wideSidebar}>
+            <View style={styles.wideBrandRow}>
+              <Image source={require("./carpin.png")} style={styles.logo} resizeMode="contain" />
+              <Text style={styles.wideBrandTitle}>CarPin</Text>
+            </View>
+
+            <View style={styles.wideNavList}>
+              {WIDE_NAV_ITEMS.map((item) => (
+                <WideNavButton
+                  key={item.screen}
+                  icon={item.icon}
+                  isActive={screen === item.screen}
+                  label={item.label}
+                  onPress={() => setScreen(item.screen)}
+                />
+              ))}
+            </View>
+
+            <View style={styles.wideSidebarSpacer} />
+
+            <View style={[styles.wideStatusCard, screen === "dashboard" && styles.hidden]}>
+              <Text style={styles.wideStatusEyebrow}>{parkingSpot ? "Aktiv" : "Bereit"}</Text>
+              <Text style={styles.wideStatusTitle}>{parkingSpot ? parkedVehicle?.name ?? "Fahrzeug" : selectedVehicle?.name ?? "Fahrzeug"}</Text>
+              <Text style={styles.wideStatusMeta}>
+                {parkingSpot ? `${parkingSpot.address ?? "Parkplatz"} · ${formatTime(parkingSpot.savedAt).split(",").pop()?.trim()}` : "Noch kein Parkplatz gespeichert"}
+              </Text>
+              <TouchableOpacity style={styles.wideStatusButton} onPress={parkingSpot ? openRoute : saveParkingSpot} disabled={isSavingSpot}>
+                <Text style={styles.wideStatusButtonText}>{parkingSpot ? "Route starten" : isSavingSpot ? "Speichere..." : "Parkplatz speichern"}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.wideContent}>{renderActiveScreen(true)}</View>
+        </View>
+
+        <PhotoModal
+          isVisible={isPhotoVisible}
+          isWideLayout
+          onClose={() => setIsPhotoVisible(false)}
+          parkingSpot={parkingSpot}
+          photoUri={pendingPhotoUri}
+        />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
@@ -846,6 +1014,7 @@ export default function App() {
 
       <PhotoModal
         isVisible={isPhotoVisible}
+        isWideLayout={false}
         onClose={() => setIsPhotoVisible(false)}
         parkingSpot={parkingSpot}
         photoUri={pendingPhotoUri}

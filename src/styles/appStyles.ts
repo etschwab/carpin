@@ -11,6 +11,107 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8
   },
+  hidden: {
+    display: "none"
+  },
+  wideSafeArea: {
+    backgroundColor: "#080911",
+    flex: 1
+  },
+  wideShell: {
+    backgroundColor: "#0d0d19",
+    flex: 1,
+    flexDirection: "row",
+    padding: 8
+  },
+  wideSidebar: {
+    backgroundColor: "#16161f",
+    borderColor: "#2a2a3b",
+    borderBottomLeftRadius: 22,
+    borderRightWidth: 1,
+    borderTopLeftRadius: 22,
+    padding: 12,
+    width: 204
+  },
+  wideBrandRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 14
+  },
+  wideBrandTitle: {
+    color: "#f7f8ff",
+    fontSize: 19,
+    fontWeight: "900"
+  },
+  wideNavList: {
+    gap: 5
+  },
+  wideNavButton: {
+    alignItems: "center",
+    borderRadius: 14,
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11
+  },
+  wideNavButtonActive: {
+    backgroundColor: "#123541"
+  },
+  wideNavText: {
+    color: "#8f8da0",
+    fontSize: 14,
+    fontWeight: "800"
+  },
+  wideNavTextActive: {
+    color: "#20c8f4"
+  },
+  wideSidebarSpacer: {
+    flex: 1
+  },
+  wideStatusCard: {
+    backgroundColor: "#242433",
+    borderRadius: 18,
+    padding: 13
+  },
+  wideStatusEyebrow: {
+    color: "#8f8da0",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0,
+    textTransform: "uppercase"
+  },
+  wideStatusTitle: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "900",
+    marginTop: 8
+  },
+  wideStatusMeta: {
+    color: "#a7a5b8",
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 5
+  },
+  wideStatusButton: {
+    alignItems: "center",
+    backgroundColor: "#20c8f4",
+    borderRadius: 14,
+    marginTop: 10,
+    paddingVertical: 10
+  },
+  wideStatusButtonText: {
+    color: "#071018",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  wideContent: {
+    backgroundColor: "#10101b",
+    borderBottomRightRadius: 22,
+    borderTopRightRadius: 22,
+    flex: 1,
+    overflow: "hidden"
+  },
   header: {
     alignItems: "center",
     flexDirection: "row",
@@ -63,9 +164,188 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: -16
   },
+  wideMapScreen: {
+    flex: 1,
+    position: "relative"
+  },
+  wideDashboard: {
+    backgroundColor: "#10101b",
+    flex: 1,
+    flexDirection: "row"
+  },
+  wideDashboardPanel: {
+    backgroundColor: "#151520",
+    borderRightColor: "#28283c",
+    borderRightWidth: 1,
+    flexBasis: 292,
+    flexGrow: 0,
+    flexShrink: 0
+  },
+  wideDashboardPanelContent: {
+    padding: 14,
+    paddingBottom: 18
+  },
+  wideDashboardMapPane: {
+    flex: 1,
+    minWidth: 0
+  },
+  widePanelEyebrow: {
+    color: "#20c8f4",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  widePanelTitle: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+    lineHeight: 23,
+    marginTop: 8
+  },
+  widePanelMeta: {
+    color: "#9aa8b6",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 6
+  },
+  widePanelDescription: {
+    backgroundColor: "#0e3448",
+    borderColor: "#176783",
+    borderRadius: 12,
+    borderWidth: 1,
+    color: "#d8e7f1",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 10,
+    padding: 10
+  },
+  widePanelStats: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 12
+  },
+  widePanelStat: {
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 12,
+    borderWidth: 1,
+    flex: 1,
+    padding: 10
+  },
+  widePanelStatLabel: {
+    color: "#777589",
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  widePanelStatValue: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 5
+  },
+  widePanelPrimaryButton: {
+    alignItems: "center",
+    backgroundColor: "#20c8f4",
+    borderRadius: 14,
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "center",
+    marginTop: 12,
+    paddingVertical: 12
+  },
+  widePanelPrimaryButtonText: {
+    color: "#071018",
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  widePanelSectionLabel: {
+    color: "#777589",
+    fontSize: 11,
+    fontWeight: "900",
+    marginTop: 14,
+    textTransform: "uppercase"
+  },
+  widePanelActionGrid: {
+    gap: 8,
+    marginTop: 8
+  },
+  widePanelActionButton: {
+    alignItems: "center",
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 10
+  },
+  widePanelActionText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900",
+    textAlign: "center"
+  },
+  widePanelDangerButton: {
+    backgroundColor: "#2b1b23",
+    borderColor: "#6f2b3c"
+  },
+  widePanelDangerText: {
+    color: "#ff8a9a"
+  },
+  wideMapPrimaryButton: {
+    alignItems: "center",
+    backgroundColor: "#20c8f4",
+    borderRadius: 18,
+    bottom: 18,
+    flexDirection: "row",
+    gap: 9,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
+    position: "absolute",
+    right: 18,
+    zIndex: 20,
+    elevation: 20
+  },
+  wideMapPrimaryButtonText: {
+    color: "#071018",
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  wideMapActionTray: {
+    alignItems: "center",
+    bottom: 84,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+    left: 18,
+    maxWidth: 310,
+    position: "absolute",
+    zIndex: 20,
+    elevation: 20
+  },
+  wideMapActionButton: {
+    backgroundColor: "rgba(17, 17, 29, 0.92)",
+    borderColor: "#242439",
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  wideMapActionButtonText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  wideMapDangerButton: {
+    backgroundColor: "rgba(43, 27, 35, 0.94)",
+    borderColor: "#6f2b3c"
+  },
+  wideMapDangerButtonText: {
+    color: "#ff8a9a"
+  },
   mapCard: {
     flex: 1,
-    minHeight: 520,
+    minHeight: 0,
     overflow: "hidden",
     position: "relative"
   },
@@ -686,6 +966,13 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end"
   },
+  wideDescriptionModalBackdrop: {
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.68)",
+    flex: 1,
+    justifyContent: "center",
+    padding: 24
+  },
   customTimerModal: {
     backgroundColor: "#11111d",
     borderColor: "#242439",
@@ -694,6 +981,15 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     paddingBottom: 28
+  },
+  wideDescriptionModal: {
+    backgroundColor: "#11111d",
+    borderColor: "#242439",
+    borderRadius: 22,
+    borderWidth: 1,
+    maxWidth: 560,
+    padding: 18,
+    width: "72%"
   },
   customTimerModalHeader: {
     alignItems: "flex-start",
@@ -781,6 +1077,12 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     minHeight: 118,
+    paddingTop: 14
+  },
+  wideDescriptionModalInput: {
+    fontSize: 16,
+    lineHeight: 22,
+    minHeight: 116,
     paddingTop: 14
   },
   customTimerSubmitButton: {
@@ -888,6 +1190,13 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end"
   },
+  widePhotoModalBackdrop: {
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.78)",
+    flex: 1,
+    justifyContent: "center",
+    padding: 22
+  },
   photoModal: {
     backgroundColor: "#11111d",
     borderColor: "#242439",
@@ -896,6 +1205,30 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     paddingBottom: 28
+  },
+  widePhotoModal: {
+    backgroundColor: "#11111d",
+    borderColor: "#242439",
+    borderRadius: 22,
+    borderWidth: 1,
+    maxHeight: "88%",
+    maxWidth: 760,
+    padding: 18,
+    width: "76%"
+  },
+  widePhotoModalHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+    marginBottom: 12
+  },
+  widePhotoModalMeta: {
+    color: "#8f8da0",
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 17,
+    marginTop: -8
   },
   photoModalTitle: {
     color: "#ffffff",
@@ -907,6 +1240,22 @@ export const styles = StyleSheet.create({
     aspectRatio: 1.1,
     borderRadius: 18,
     width: "100%"
+  },
+  widePhotoPreview: {
+    alignSelf: "center",
+    aspectRatio: 1.65,
+    borderRadius: 18,
+    maxHeight: 330,
+    width: "100%"
+  },
+  widePhotoCloseButton: {
+    alignItems: "center",
+    alignSelf: "flex-end",
+    backgroundColor: "#20c8f4",
+    borderRadius: 14,
+    marginTop: 14,
+    paddingHorizontal: 22,
+    paddingVertical: 12
   },
   emptyHistoryText: {
     color: "#9aa8b6",

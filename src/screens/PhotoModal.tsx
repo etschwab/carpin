@@ -5,21 +5,34 @@ import type { ParkingSpot } from "../types/parking";
 
 type PhotoModalProps = {
   isVisible: boolean;
+  isWideLayout?: boolean;
   onClose: () => void;
   parkingSpot: ParkingSpot | null;
   photoUri?: string | null;
 };
 
-export function PhotoModal({ isVisible, onClose, parkingSpot, photoUri }: PhotoModalProps) {
+export function PhotoModal({ isVisible, isWideLayout = false, onClose, parkingSpot, photoUri }: PhotoModalProps) {
   const visiblePhotoUri = parkingSpot?.photoUri ?? photoUri;
 
   return (
-    <Modal visible={isVisible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.photoModalBackdrop}>
-        <View style={styles.photoModal}>
-          <Text style={styles.photoModalTitle}>Parkplatzfoto</Text>
-          {visiblePhotoUri && <Image source={{ uri: visiblePhotoUri }} style={styles.photoPreview} />}
-          <TouchableOpacity style={styles.primaryButton} onPress={onClose}>
+    <Modal visible={isVisible} animationType={isWideLayout ? "fade" : "slide"} transparent onRequestClose={onClose}>
+      <View style={isWideLayout ? styles.widePhotoModalBackdrop : styles.photoModalBackdrop}>
+        <View style={isWideLayout ? styles.widePhotoModal : styles.photoModal}>
+          <View style={isWideLayout ? styles.widePhotoModalHeader : undefined}>
+            <View>
+              <Text style={styles.photoModalTitle}>Parkplatzfoto</Text>
+              {isWideLayout && parkingSpot ? <Text style={styles.widePhotoModalMeta}>{parkingSpot.address}</Text> : null}
+            </View>
+            {isWideLayout ? (
+              <TouchableOpacity style={styles.modalCloseButton} onPress={onClose}>
+                <Text style={styles.modalCloseButtonText}>×</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          {visiblePhotoUri ? <Image source={{ uri: visiblePhotoUri }} style={isWideLayout ? styles.widePhotoPreview : styles.photoPreview} /> : null}
+
+          <TouchableOpacity style={isWideLayout ? styles.widePhotoCloseButton : styles.primaryButton} onPress={onClose}>
             <Text style={styles.primaryButtonText}>Schließen</Text>
           </TouchableOpacity>
         </View>

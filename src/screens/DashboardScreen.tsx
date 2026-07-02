@@ -29,6 +29,7 @@ type DashboardScreenProps = {
   currentLocation: Coordinate | null;
   isLocating: boolean;
   isSavingSpot: boolean;
+  isWideLayout?: boolean;
   mapRegion: Region;
   onAddCustomMarker: (coordinate: Coordinate, name: string, color: string) => void;
   onChangeParkingDescription: (value: string) => void;
@@ -137,6 +138,7 @@ export function DashboardScreen({
   currentLocation,
   isLocating,
   isSavingSpot,
+  isWideLayout = false,
   mapRegion,
   onAddCustomMarker,
   onChangeParkingDescription,
@@ -437,6 +439,275 @@ export function DashboardScreen({
           )}
         </View>
       </>
+    );
+  }
+
+  function renderWideDashboardPanel() {
+    const photoIsSaved = Boolean(parkingSpot?.photoUri || pendingPhotoUri);
+
+    return (
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={styles.wideDashboardPanel}
+        contentContainerStyle={styles.wideDashboardPanelContent}
+      >
+        <Text style={styles.widePanelEyebrow}>{parkingSpot ? "Parking aktiv" : "Bereit"}</Text>
+        <Text style={styles.widePanelTitle}>{currentAddressLabel}</Text>
+        <Text style={styles.widePanelMeta}>
+          {parkingSpot
+            ? `${selectedVehicle?.name ?? "Fahrzeug"} · ${formatTime(parkingSpot.savedAt)}`
+            : `${selectedVehicle?.name ?? "Fahrzeug"} · Standort prüfen und Parkplatz speichern`}
+        </Text>
+
+        {parkingSpot?.description || parkingDescription ? (
+          <Text style={styles.widePanelDescription}>{parkingSpot?.description ?? parkingDescription}</Text>
+        ) : null}
+
+        <View style={styles.widePanelStats}>
+          <View style={styles.widePanelStat}>
+            <Text style={styles.widePanelStatLabel}>Timer</Text>
+            <Text style={styles.widePanelStatValue}>
+              {parkingSpot && timerSpotMatchesActiveSpot && timerIsActive ? formatCountdown(remainingMs) : "nicht gesetzt"}
+            </Text>
+          </View>
+          <View style={styles.widePanelStat}>
+            <Text style={styles.widePanelStatLabel}>Foto</Text>
+            <Text style={styles.widePanelStatValue}>{photoIsSaved ? "gespeichert" : "offen"}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.widePanelPrimaryButton}
+          onPress={parkingSpot ? onOpenRoute : onSaveParkingSpot}
+          disabled={isSavingSpot}
+        >
+          <MaterialCommunityIcons color="#071018" name={parkingSpot ? "navigation-variant" : "map-marker-plus"} size={18} />
+          <Text style={styles.widePanelPrimaryButtonText}>
+            {parkingSpot ? "Route starten" : isSavingSpot ? "Speichere..." : "Parkplatz speichern"}
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={styles.widePanelSectionLabel}>Aktionen</Text>
+        <View style={styles.widePanelActionGrid}>
+          <TouchableOpacity style={styles.widePanelActionButton} onPress={openDescriptionModal}>
+            <Text style={styles.widePanelActionText}>
+              {parkingSpot || parkingDescription ? "Beschreibung bearbeiten" : "Beschreibung hinzufügen"}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.widePanelActionButton} onPress={() => onPickPhoto("camera")}>
+            <Text style={styles.widePanelActionText}>Foto aufnehmen</Text>
+          </TouchableOpacity>
+          {photoIsSaved ? (
+            <TouchableOpacity style={styles.widePanelActionButton} onPress={onShowPhoto}>
+              <Text style={styles.widePanelActionText}>Foto anzeigen</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.widePanelActionButton} onPress={() => onPickPhoto("library")}>
+              <Text style={styles.widePanelActionText}>Galerie</Text>
+            </TouchableOpacity>
+          )}
+          {parkingSpot ? (
+            <>
+              <TouchableOpacity style={styles.widePanelActionButton} onPress={onOpenTimer}>
+                <Text style={styles.widePanelActionText}>Timer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.widePanelActionButton} onPress={onShareParking}>
+                <Text style={styles.widePanelActionText}>Teilen</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.widePanelActionButton, styles.widePanelDangerButton]} onPress={onClearParkingSpot}>
+                <Text style={[styles.widePanelActionText, styles.widePanelDangerText]}>Parking beenden</Text>
+              </TouchableOpacity>
+            </>
+          ) : null}
+        </View>
+      </ScrollView>
+    );
+  }
+
+  if (isWideLayout) {
+    return (
+      <View style={styles.wideDashboard}>
+        {renderWideDashboardPanel()}
+        <View style={styles.wideDashboardMapPane}>
+          <CarPinMap
+            customMarkers={customMarkers}
+            currentLocation={currentLocation}
+            isLocating={isLocating}
+            onAddCustomMarker={onAddCustomMarker}
+            onRefreshLocation={onRefreshCurrentLocation}
+            parkingSpot={parkingSpot}
+            region={mapRegion}
+          />
+        </View>
+
+        <Modal
+          animationType="fade"
+          onRequestClose={() => setIsDescriptionModalVisible(false)}
+          transparent
+          visible={isDescriptionModalVisible}
+        >
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.wideDescriptionModalBackdrop}
+          >
+            <View style={styles.wideDescriptionModal}>
+              <View style={styles.customTimerModalHeader}>
+                <View>
+                  <Text style={styles.customTimerModalTitle}>
+                    {parkingSpot ? "Beschreibung bearbeiten" : "Beschreibung hinzufügen"}
+                  </Text>
+                  <Text style={styles.customTimerModalMeta}>Speichere eine kurze Notiz zu deinem Parkplatz.</Text>
+                </View>
+                <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsDescriptionModalVisible(false)}>
+                  <Text style={styles.modalCloseButtonText}>×</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.customTimerFieldGroup}>
+                <Text style={styles.customTimerFieldLabel}>Beschreibung</Text>
+                <TextInput
+                  multiline
+                  numberOfLines={4}
+                  onChangeText={setDescriptionDraft}
+                  placeholder="z.B. Parkhaus, 2. Stock, Platz 234"
+                  placeholderTextColor="#777589"
+                  returnKeyType="done"
+                  style={[styles.customTimerModalInput, styles.wideDescriptionModalInput]}
+                  textAlignVertical="top"
+                  value={descriptionDraft}
+                />
+              </View>
+
+              <TouchableOpacity style={styles.customTimerSubmitButton} onPress={submitDescription}>
+                <Text style={styles.customTimerSubmitButtonText}>OK speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+      </View>
+    );
+  }
+
+  if (false && isWideLayout) {
+    return (
+      <View style={styles.wideMapScreen}>
+        <CarPinMap
+          customMarkers={customMarkers}
+          currentLocation={currentLocation}
+          isLocating={isLocating}
+          onAddCustomMarker={onAddCustomMarker}
+          onRefreshLocation={onRefreshCurrentLocation}
+          parkingSpot={parkingSpot}
+          region={mapRegion}
+        />
+
+        <TouchableOpacity
+          style={styles.wideMapPrimaryButton}
+          onPress={parkingSpot ? onOpenRoute : onSaveParkingSpot}
+          disabled={isSavingSpot}
+        >
+          <MaterialCommunityIcons color="#071018" name={parkingSpot ? "navigation-variant" : "map-marker-plus"} size={22} />
+          <Text style={styles.wideMapPrimaryButtonText}>
+            {parkingSpot ? "Route starten" : isSavingSpot ? "Speichere..." : "Parkplatz speichern"}
+          </Text>
+        </TouchableOpacity>
+
+        <View style={styles.wideMapActionTray}>
+          {parkingSpot ? (
+            <>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={openDescriptionModal}>
+                <Text style={styles.wideMapActionButtonText}>Beschreibung bearbeiten</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("camera")}>
+                <Text style={styles.wideMapActionButtonText}>Foto aufnehmen</Text>
+              </TouchableOpacity>
+              {parkingSpot?.photoUri ? (
+                <TouchableOpacity style={styles.wideMapActionButton} onPress={onShowPhoto}>
+                  <Text style={styles.wideMapActionButtonText}>Foto anzeigen</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("library")}>
+                  <Text style={styles.wideMapActionButtonText}>Galerie</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={onOpenTimer}>
+                <Text style={styles.wideMapActionButtonText}>Timer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={onShareParking}>
+                <Text style={styles.wideMapActionButtonText}>Teilen</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.wideMapActionButton, styles.wideMapDangerButton]} onPress={onClearParkingSpot}>
+                <Text style={[styles.wideMapActionButtonText, styles.wideMapDangerButtonText]}>Beenden</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={openDescriptionModal}>
+                <Text style={styles.wideMapActionButtonText}>
+                  {parkingDescription ? "Beschreibung bearbeiten" : "Beschreibung hinzufügen"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("camera")}>
+                <Text style={styles.wideMapActionButtonText}>Foto aufnehmen</Text>
+              </TouchableOpacity>
+              {pendingPhotoUri ? (
+                <TouchableOpacity style={styles.wideMapActionButton} onPress={onShowPhoto}>
+                  <Text style={styles.wideMapActionButtonText}>Foto anzeigen</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("library")}>
+                  <Text style={styles.wideMapActionButtonText}>Galerie</Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+        </View>
+
+        <Modal
+          animationType="slide"
+          onRequestClose={() => setIsDescriptionModalVisible(false)}
+          transparent
+          visible={isDescriptionModalVisible}
+        >
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.customTimerModalBackdrop}
+          >
+            <View style={styles.customTimerModal}>
+              <View style={styles.customTimerModalHeader}>
+                <View>
+                  <Text style={styles.customTimerModalTitle}>
+                    {parkingSpot ? "Beschreibung bearbeiten" : "Beschreibung hinzufügen"}
+                  </Text>
+                  <Text style={styles.customTimerModalMeta}>Speichere eine kurze Notiz zu deinem Parkplatz.</Text>
+                </View>
+                <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsDescriptionModalVisible(false)}>
+                  <Text style={styles.modalCloseButtonText}>×</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.customTimerFieldGroup}>
+                <Text style={styles.customTimerFieldLabel}>Beschreibung</Text>
+                <TextInput
+                  multiline
+                  numberOfLines={4}
+                  onChangeText={setDescriptionDraft}
+                  placeholder="z.B. Parkhaus, 2. Stock, Platz 234"
+                  placeholderTextColor="#777589"
+                  returnKeyType="done"
+                  style={[styles.customTimerModalInput, styles.descriptionModalInput]}
+                  textAlignVertical="top"
+                  value={descriptionDraft}
+                />
+              </View>
+
+              <TouchableOpacity style={styles.customTimerSubmitButton} onPress={submitDescription}>
+                <Text style={styles.customTimerSubmitButtonText}>OK speichern</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+      </View>
     );
   }
 
