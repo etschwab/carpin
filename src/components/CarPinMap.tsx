@@ -92,6 +92,7 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
   };
 
   const locationTextColor = StyleSheet.flatten(styles.locationButtonText)?.color || "#b7b5c8";
+  const compassRotation = isHeadingFollowEnabled ? -deviceHeading : 0;
 
   return (
     <View style={styles.mapCard}>
@@ -126,7 +127,7 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
       </MapView>
 
       <View style={customStyles.compassBadge}>
-        <View style={[customStyles.compassArrowWrap, { transform: [{ rotate: `${deviceHeading}deg` }] }]}>
+        <View style={[customStyles.compassArrowWrap, { transform: [{ rotate: `${compassRotation}deg` }] }]}>
           <MaterialCommunityIcons name="navigation-variant" size={18} color="#20c8f4" />
         </View>
         <Text style={customStyles.compassText}>{Math.round(deviceHeading)}°</Text>
