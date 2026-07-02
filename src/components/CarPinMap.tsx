@@ -71,11 +71,13 @@ export function CarPinMap({
   const lastAppliedHeadingRef = useRef(0);
   const [deviceHeading, setDeviceHeading] = useState(0);
   const [isHeadingFollowEnabled, setIsHeadingFollowEnabled] = useState(true);
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
   const [markerDisplayMode, setMarkerDisplayMode] = useState<MarkerDisplayMode>("labels");
   const [pendingMarkerCoordinate, setPendingMarkerCoordinate] = useState<Coordinate | null>(null);
   const [isMarkerModalVisible, setIsMarkerModalVisible] = useState(false);
   const [markerNameDraft, setMarkerNameDraft] = useState("");
   const [markerColorDraft, setMarkerColorDraft] = useState<string>(MARKER_COLOR_OPTIONS[0]);
+  const [visibleLatitudeDelta, setVisibleLatitudeDelta] = useState(region.latitudeDelta);
   const parkingCoordinate = parkingSpot ? { latitude: parkingSpot.latitude, longitude: parkingSpot.longitude } : null;
   const routeCoordinates = currentLocation && parkingCoordinate ? [currentLocation, parkingCoordinate] : [];
 
@@ -137,6 +139,7 @@ export function CarPinMap({
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setPendingMarkerCoordinate({ latitude, longitude });
     setIsMarkerModalVisible(false);
+    setIsActionMenuOpen(false);
   }
 
   function handleOpenMarkerModal() {
@@ -163,6 +166,9 @@ export function CarPinMap({
 
   const locationTextColor = StyleSheet.flatten(styles.locationButtonText)?.color || "#b7b5c8";
   const compassRotation = isHeadingFollowEnabled ? -deviceHeading : 0;
+  const customMarkerSize = Math.max(18, Math.min(34, 34 - Math.log10(Math.max(visibleLatitudeDelta, 0.003)) * 8));
+  const customMarkerLabelFontSize = Math.max(9, Math.min(11, customMarkerSize * 0.34));
+  const customMarkerLabelPadding = Math.max(5, Math.min(8, customMarkerSize * 0.22));
 
   return (
     <View style={styles.mapCard}>
@@ -172,6 +178,9 @@ export function CarPinMap({
         initialRegion={region}
         customMapStyle={MAP_DARK_STYLE}
         onPress={handleMapPress}
+        onRegionChangeComplete={(nextRegion) => {
+          setVisibleLatitudeDelta(nextRegion.latitudeDelta);
+        }}
         rotateEnabled={isHeadingFollowEnabled}
         showsCompass={false}
         showsMyLocationButton={false}
@@ -200,8 +209,17 @@ export function CarPinMap({
           customMarkers.map((marker) => (
             <Marker key={marker.id} coordinate={marker} title={marker.name}>
               <View style={customStyles.customMarkerWrap}>
-                {markerDisplayMode === "labels" ? <Text style={customStyles.customMarkerLabel}>{marker.name}</Text> : null}
-                <MaterialCommunityIcons name="map-marker" size={34} color={marker.color} />
+                {markerDisplayMode === "labels" ? (
+                  <Text
+                    style={[
+                      customStyles.customMarkerLabel,
+                      { fontSize: customMarkerLabelFontSize, paddingHorizontal: customMarkerLabelPadding, paddingVertical: customMarkerLabelPadding * 0.5 }
+                    ]}
+                  >
+                    {marker.name}
+                  </Text>
+                ) : null}
+                <MaterialCommunityIcons name="map-marker" size={customMarkerSize} color={marker.color} />
               </View>
             </Marker>
           ))}
@@ -223,15 +241,14 @@ export function CarPinMap({
       </View>
 
       {pendingMarkerCoordinate ? (
-        <View style={customStyles.pendingMarkerCard}>
+        <View style={customStyles.pendingMarkerBanner}>
           <Text style={customStyles.pendingMarkerTitle}>Position markiert</Text>
-          <Text style={customStyles.pendingMarkerMeta}>Tippe jetzt auf Marker hinzufuegen.</Text>
           <View style={customStyles.pendingMarkerActions}>
             <TouchableOpacity style={customStyles.pendingMarkerButton} onPress={handleOpenMarkerModal} activeOpacity={0.8}>
               <Text style={customStyles.pendingMarkerButtonText}>Marker hinzufuegen</Text>
             </TouchableOpacity>
             <TouchableOpacity style={customStyles.pendingMarkerCancel} onPress={() => setPendingMarkerCoordinate(null)} activeOpacity={0.8}>
-              <Text style={customStyles.pendingMarkerCancelText}>Abbrechen</Text>
+              <MaterialCommunityIcons name="close" size={18} color="#b7b5c8" />
             </TouchableOpacity>
           </View>
         </View>
@@ -239,56 +256,72 @@ export function CarPinMap({
 
       <View style={customStyles.buttonContainer}>
         <TouchableOpacity
-          style={[customStyles.iconButton, isHeadingFollowEnabled && customStyles.iconButtonActive]}
-          onPress={() => setIsHeadingFollowEnabled((current) => !current)}
+          style={[customStyles.iconButton, isActionMenuOpen && customStyles.iconButtonActive]}
+          onPress={() => setIsActionMenuOpen((current) => !current)}
           activeOpacity={0.7}
         >
-          <MaterialCommunityIcons
-            name={isHeadingFollowEnabled ? "compass" : "compass-off-outline"}
-            size={24}
-            color={isHeadingFollowEnabled ? "#071018" : locationTextColor}
-          />
+          <MaterialCommunityIcons name={isActionMenuOpen ? "close" : "dots-horizontal"} size={24} color={isActionMenuOpen ? "#071018" : locationTextColor} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[customStyles.iconButton, customStyles.secondaryIconButton]}
-          onPress={() => setMarkerDisplayMode((current) => getNextMarkerMode(current))}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons
-            name={markerDisplayMode === "hidden" ? "map-marker-off-outline" : markerDisplayMode === "icons" ? "map-marker-multiple-outline" : "format-text"}
-            size={22}
-            color={locationTextColor}
-          />
-          <Text style={customStyles.iconButtonMiniText}>{getMarkerModeLabel(markerDisplayMode)}</Text>
-        </TouchableOpacity>
+        {isActionMenuOpen ? (
+          <View style={customStyles.actionMenu}>
+            <TouchableOpacity
+              style={customStyles.actionMenuItem}
+              onPress={() => setIsHeadingFollowEnabled((current) => !current)}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons
+                name={isHeadingFollowEnabled ? "compass" : "compass-off-outline"}
+                size={20}
+                color={locationTextColor}
+              />
+              <Text style={customStyles.actionMenuText}>{isHeadingFollowEnabled ? "Kompass aktiv" : "Kompass aus"}</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity style={[customStyles.iconButton, customStyles.secondaryIconButton]} onPress={handleOpenSwissParkingSearch} activeOpacity={0.7}>
-          <MaterialCommunityIcons name="parking" size={24} color={locationTextColor} />
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={customStyles.actionMenuItem}
+              onPress={() => setMarkerDisplayMode((current) => getNextMarkerMode(current))}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons
+                name={markerDisplayMode === "hidden" ? "map-marker-off-outline" : markerDisplayMode === "icons" ? "map-marker-multiple-outline" : "format-text"}
+                size={20}
+                color={locationTextColor}
+              />
+              <Text style={customStyles.actionMenuText}>Marker: {getMarkerModeLabel(markerDisplayMode)}</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[customStyles.iconButton, customStyles.secondaryIconButton]}
-          onPress={async () => {
-            const refreshedLocation = await onRefreshLocation();
-            const targetLocation = refreshedLocation ?? currentLocation;
-            if (targetLocation) {
-              mapRef.current?.animateToRegion(
-                {
-                  latitude: targetLocation.latitude,
-                  longitude: targetLocation.longitude,
-                  latitudeDelta: 0.012,
-                  longitudeDelta: 0.012
-                },
-                350
-              );
-            }
-          }}
-          disabled={isLocating}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons name="crosshairs-gps" size={24} color={locationTextColor} />
-        </TouchableOpacity>
+            <TouchableOpacity style={customStyles.actionMenuItem} onPress={handleOpenSwissParkingSearch} activeOpacity={0.8}>
+              <MaterialCommunityIcons name="parking" size={20} color={locationTextColor} />
+              <Text style={customStyles.actionMenuText}>Parking suchen</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={customStyles.actionMenuItem}
+              onPress={async () => {
+                const refreshedLocation = await onRefreshLocation();
+                const targetLocation = refreshedLocation ?? currentLocation;
+                if (targetLocation) {
+                  mapRef.current?.animateToRegion(
+                    {
+                      latitude: targetLocation.latitude,
+                      longitude: targetLocation.longitude,
+                      latitudeDelta: 0.012,
+                      longitudeDelta: 0.012
+                    },
+                    350
+                  );
+                }
+                setIsActionMenuOpen(false);
+              }}
+              disabled={isLocating}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons name="crosshairs-gps" size={20} color={locationTextColor} />
+              <Text style={customStyles.actionMenuText}>Zu mir</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
 
       <Modal animationType="fade" transparent visible={isMarkerModalVisible} onRequestClose={() => setIsMarkerModalVisible(false)}>
@@ -349,6 +382,29 @@ const customStyles = StyleSheet.create({
     right: 16,
     top: 18
   },
+  actionMenu: {
+    backgroundColor: "rgba(17, 17, 29, 0.96)",
+    borderColor: "#242439",
+    borderRadius: 18,
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 8,
+    width: 170
+  },
+  actionMenuItem: {
+    alignItems: "center",
+    borderRadius: 12,
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 11
+  },
+  actionMenuText: {
+    color: "#f7f8ff",
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "800"
+  },
   compassBadge: {
     alignItems: "center",
     backgroundColor: "rgba(17, 17, 29, 0.92)",
@@ -385,15 +441,6 @@ const customStyles = StyleSheet.create({
   iconButtonActive: {
     backgroundColor: "#20c8f4"
   },
-  iconButtonMiniText: {
-    color: "#b7b5c8",
-    fontSize: 8,
-    fontWeight: "900",
-    marginTop: 1
-  },
-  secondaryIconButton: {
-    marginTop: 10
-  },
   customMarkerWrap: {
     alignItems: "center"
   },
@@ -417,37 +464,38 @@ const customStyles = StyleSheet.create({
     borderRadius: 18,
     padding: 2
   },
-  pendingMarkerCard: {
+  pendingMarkerBanner: {
+    alignItems: "center",
     backgroundColor: "rgba(17, 17, 29, 0.96)",
     borderColor: "#242439",
-    borderRadius: 18,
+    borderRadius: 999,
     borderWidth: 1,
-    bottom: 20,
-    left: 16,
-    padding: 14,
+    flexDirection: "row",
+    left: 72,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     position: "absolute",
-    right: 84
+    right: 72,
+    top: 74
   },
   pendingMarkerTitle: {
     color: "#ffffff",
-    fontSize: 14,
+    flex: 1,
+    fontSize: 13,
     fontWeight: "900"
   },
-  pendingMarkerMeta: {
-    color: "#9aa8b6",
-    fontSize: 12,
-    marginTop: 4
-  },
   pendingMarkerActions: {
+    alignItems: "center",
     flexDirection: "row",
-    gap: 10,
-    marginTop: 12
+    gap: 8
   },
   pendingMarkerButton: {
+    alignItems: "center",
     backgroundColor: "#20c8f4",
     borderRadius: 12,
-    flex: 1,
-    paddingVertical: 11
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 9
   },
   pendingMarkerButtonText: {
     color: "#071018",
@@ -458,16 +506,12 @@ const customStyles = StyleSheet.create({
   pendingMarkerCancel: {
     backgroundColor: "#1b1b2d",
     borderColor: "#28283c",
-    borderRadius: 12,
+    borderRadius: 999,
     borderWidth: 1,
-    flex: 0.72,
-    paddingVertical: 11
-  },
-  pendingMarkerCancelText: {
-    color: "#b7b5c8",
-    fontSize: 13,
-    fontWeight: "900",
-    textAlign: "center"
+    height: 36,
+    width: 36,
+    alignItems: "center",
+    justifyContent: "center"
   },
   modalBackdrop: {
     alignItems: "center",
