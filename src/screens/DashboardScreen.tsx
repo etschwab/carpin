@@ -87,6 +87,18 @@ function getVehicleIcon(vehicle: Vehicle | undefined) {
   return { iconName: "car", IconComponent: FontAwesome5 };
 }
 
+function getInfoTileIcon(tile: "location" | "timer" | "photo") {
+  if (tile === "location") {
+    return <MaterialCommunityIcons color="#20c8f4" name="crosshairs-gps" size={18} />;
+  }
+
+  if (tile === "timer") {
+    return <MaterialCommunityIcons color="#20c8f4" name="timer-outline" size={18} />;
+  }
+
+  return <MaterialCommunityIcons color="#20c8f4" name="image-outline" size={18} />;
+}
+
 function VehicleIconSelector({
   onSelectVehicle,
   selectedVehicleId,
@@ -163,6 +175,7 @@ export function DashboardScreen({
   vehicles
 }: DashboardScreenProps) {
   const vehicleIcon = getVehicleIcon(selectedVehicle);
+  const VehicleInfoIcon = vehicleIcon.IconComponent;
   const fullSheetScrollRef = useRef<ScrollView | null>(null);
   const sheetHeight = bottomSheetAnimatedStyle.height;
   const compactContentAnimatedStyle = {
@@ -342,14 +355,22 @@ export function DashboardScreen({
         </View>
 
         <View style={styles.fullIconGrid}>
-          <FullInfoTile icon="L" label="Standort" value={coordinateLabel} />
-          <FullInfoTile icon={vehicleIcon.iconName} label="Fahrzeug" value={selectedVehicle?.name ?? "Kein Fahrzeug"} />
+          <FullInfoTile iconElement={getInfoTileIcon("location")} label="Standort" value={coordinateLabel} />
           <FullInfoTile
-            icon="T"
+            iconElement={<VehicleInfoIcon color="#20c8f4" name={vehicleIcon.iconName} size={18} />}
+            label="Fahrzeug"
+            value={selectedVehicle?.name ?? "Kein Fahrzeug"}
+          />
+          <FullInfoTile
+            iconElement={getInfoTileIcon("timer")}
             label="Timer"
             value={parkingSpot && timerSpotMatchesActiveSpot && timerIsActive ? formatCountdown(remainingMs) : "nicht gesetzt"}
           />
-          <FullInfoTile icon="F" label="Foto" value={parkingSpot?.photoUri || pendingPhotoUri ? "gespeichert" : "noch offen"} />
+          <FullInfoTile
+            iconElement={getInfoTileIcon("photo")}
+            label="Foto"
+            value={parkingSpot?.photoUri || pendingPhotoUri ? "gespeichert" : "noch offen"}
+          />
         </View>
 
         <View style={styles.fullActionPanel}>
