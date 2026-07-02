@@ -91,7 +91,7 @@ export default function App() {
   const sheetDragStartHeight = useRef(SHEET_HEIGHTS.mid);
   const sheetCurrentHeight = useRef(SHEET_HEIGHTS.mid);
   const hasShownNotificationAlertRef = useRef(false);
-  const isWideLayout = windowWidth >= 780 || windowWidth > windowHeight * 1.25;
+  const isWideLayout = windowWidth > windowHeight || windowWidth >= 780;
 
   useEffect(() => {
     async function loadState() {
