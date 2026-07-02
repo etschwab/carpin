@@ -635,6 +635,18 @@ export const styles = StyleSheet.create({
     marginTop: 14,
     padding: 15
   },
+  descriptionOpenButton: {
+    alignItems: "center",
+    backgroundColor: "#151523",
+    borderColor: "#242439",
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+    marginTop: 18,
+    padding: 15
+  },
   customTimerOpenTextWrap: {
     flex: 1
   },
@@ -750,6 +762,12 @@ export const styles = StyleSheet.create({
     fontWeight: "900",
     paddingHorizontal: 14,
     paddingVertical: 14
+  },
+  descriptionModalInput: {
+    fontSize: 16,
+    lineHeight: 22,
+    minHeight: 118,
+    paddingTop: 14
   },
   customTimerSubmitButton: {
     alignItems: "center",
