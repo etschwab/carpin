@@ -512,6 +512,21 @@ export default function App() {
     }
   }
 
+  function updateParkingSpotDescription(value: string) {
+    if (!parkingSpot) {
+      return;
+    }
+
+    const description = value.trim();
+    const updatedParkingSpot = {
+      ...parkingSpot,
+      description: description || undefined
+    };
+
+    setParkingSpot(updatedParkingSpot);
+    updateSpotInHistory(updatedParkingSpot);
+  }
+
   function openRoute() {
     if (!parkingSpot) {
       return;
@@ -770,6 +785,7 @@ export default function App() {
             onShareParking={shareParkingSpot}
             onShowPhoto={() => setIsPhotoVisible(true)}
             onToggleSheetMode={toggleSheetMode}
+            onUpdateParkingSpotDescription={updateParkingSpotDescription}
             parkingDescription={parkingDescription}
             parkingSpot={parkingSpot}
             pendingPhotoUri={pendingPhotoUri}
