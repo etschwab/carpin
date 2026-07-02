@@ -1,0 +1,68 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Etienne - Dashboard-Statuskachel Snapshot: FullInfoTile rendert Label, Wert und Icon stabil 1`] = `
+<View
+  style={
+    {
+      "backgroundColor": "#1b1b2d",
+      "borderColor": "#28283c",
+      "borderRadius": 16,
+      "borderWidth": 1,
+      "minHeight": 112,
+      "padding": 13,
+      "width": "48%",
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#073f59",
+        "borderRadius": 12,
+        "height": 32,
+        "justifyContent": "center",
+        "marginBottom": 10,
+        "width": 32,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#20c8f4",
+          "fontSize": 15,
+          "fontWeight": "900",
+        }
+      }
+    >
+      P
+    </Text>
+  </View>
+  <Text
+    style={
+      {
+        "color": "#777589",
+        "fontSize": 11,
+        "fontWeight": "900",
+        "textTransform": "uppercase",
+      }
+    }
+  >
+    Foto
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#ffffff",
+        "fontSize": 13,
+        "fontWeight": "900",
+        "lineHeight": 18,
+        "marginTop": 5,
+      }
+    }
+  >
+    gespeichert
+  </Text>
+</View>
+`;
