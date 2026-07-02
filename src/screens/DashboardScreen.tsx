@@ -535,16 +535,16 @@ export function DashboardScreen({
         </View>
 
         <Modal
-          animationType="slide"
+          animationType="fade"
           onRequestClose={() => setIsDescriptionModalVisible(false)}
           transparent
           visible={isDescriptionModalVisible}
         >
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.customTimerModalBackdrop}
+            style={styles.wideDescriptionModalBackdrop}
           >
-            <View style={styles.customTimerModal}>
+            <View style={styles.wideDescriptionModal}>
               <View style={styles.customTimerModalHeader}>
                 <View>
                   <Text style={styles.customTimerModalTitle}>
@@ -566,7 +566,7 @@ export function DashboardScreen({
                   placeholder="z.B. Parkhaus, 2. Stock, Platz 234"
                   placeholderTextColor="#777589"
                   returnKeyType="done"
-                  style={[styles.customTimerModalInput, styles.descriptionModalInput]}
+                  style={[styles.customTimerModalInput, styles.wideDescriptionModalInput]}
                   textAlignVertical="top"
                   value={descriptionDraft}
                 />

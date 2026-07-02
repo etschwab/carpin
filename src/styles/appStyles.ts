@@ -966,6 +966,13 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end"
   },
+  wideDescriptionModalBackdrop: {
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.68)",
+    flex: 1,
+    justifyContent: "center",
+    padding: 24
+  },
   customTimerModal: {
     backgroundColor: "#11111d",
     borderColor: "#242439",
@@ -974,6 +981,15 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     paddingBottom: 28
+  },
+  wideDescriptionModal: {
+    backgroundColor: "#11111d",
+    borderColor: "#242439",
+    borderRadius: 22,
+    borderWidth: 1,
+    maxWidth: 560,
+    padding: 18,
+    width: "72%"
   },
   customTimerModalHeader: {
     alignItems: "flex-start",
@@ -1061,6 +1077,12 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     minHeight: 118,
+    paddingTop: 14
+  },
+  wideDescriptionModalInput: {
+    fontSize: 16,
+    lineHeight: 22,
+    minHeight: 116,
     paddingTop: 14
   },
   customTimerSubmitButton: {
@@ -1168,6 +1190,13 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end"
   },
+  widePhotoModalBackdrop: {
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.78)",
+    flex: 1,
+    justifyContent: "center",
+    padding: 22
+  },
   photoModal: {
     backgroundColor: "#11111d",
     borderColor: "#242439",
@@ -1176,6 +1205,30 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     paddingBottom: 28
+  },
+  widePhotoModal: {
+    backgroundColor: "#11111d",
+    borderColor: "#242439",
+    borderRadius: 22,
+    borderWidth: 1,
+    maxHeight: "88%",
+    maxWidth: 760,
+    padding: 18,
+    width: "76%"
+  },
+  widePhotoModalHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+    marginBottom: 12
+  },
+  widePhotoModalMeta: {
+    color: "#8f8da0",
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 17,
+    marginTop: -8
   },
   photoModalTitle: {
     color: "#ffffff",
@@ -1187,6 +1240,22 @@ export const styles = StyleSheet.create({
     aspectRatio: 1.1,
     borderRadius: 18,
     width: "100%"
+  },
+  widePhotoPreview: {
+    alignSelf: "center",
+    aspectRatio: 1.65,
+    borderRadius: 18,
+    maxHeight: 330,
+    width: "100%"
+  },
+  widePhotoCloseButton: {
+    alignItems: "center",
+    alignSelf: "flex-end",
+    backgroundColor: "#20c8f4",
+    borderRadius: 14,
+    marginTop: 14,
+    paddingHorizontal: 22,
+    paddingVertical: 12
   },
   emptyHistoryText: {
     color: "#9aa8b6",

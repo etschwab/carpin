@@ -878,6 +878,7 @@ export default function App() {
 
         <PhotoModal
           isVisible={isPhotoVisible}
+          isWideLayout
           onClose={() => setIsPhotoVisible(false)}
           parkingSpot={parkingSpot}
           photoUri={pendingPhotoUri}
@@ -979,6 +980,7 @@ export default function App() {
 
       <PhotoModal
         isVisible={isPhotoVisible}
+        isWideLayout={false}
         onClose={() => setIsPhotoVisible(false)}
         parkingSpot={parkingSpot}
         photoUri={pendingPhotoUri}
