@@ -43,6 +43,7 @@ export default function App() {
   const [parkingSpot, setParkingSpot] = useState<ParkingSpot | null>(null);
   const [parkingHistory, setParkingHistory] = useState<ParkingHistoryItem[]>([]);
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
+  const [currentLocationAddress, setCurrentLocationAddress] = useState<string | null>(null);
   const [parkingDescription, setParkingDescription] = useState("");
   const [pendingPhotoUri, setPendingPhotoUri] = useState<string | null>(null);
   const [newVehicleName, setNewVehicleName] = useState("");
@@ -201,8 +202,8 @@ export default function App() {
     }),
     [activeMapCoordinate.latitude, activeMapCoordinate.longitude, parkingSpot]
   );
-  const currentAddressLabel = parkingSpot?.address || (currentLocation ? "Aktueller Standort" : "Standort wird gesucht");
-  const coordinateLabel = `${activeMapCoordinate.latitude.toFixed(5)}, ${activeMapCoordinate.longitude.toFixed(5)}`;
+  const currentAddressLabel =
+    parkingSpot?.address || currentLocationAddress || (currentLocation ? "Aktueller Standort" : "Standort wird gesucht");
   const bottomSheetAnimatedStyle = { height: sheetHeight };
   function clampSheetHeight(height: number) {
     return Math.min(SHEET_HEIGHTS.full, Math.max(SHEET_HEIGHTS.compact, height));
@@ -380,10 +381,13 @@ export default function App() {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude
       };
+      const address = await reverseGeocode(coordinate.latitude, coordinate.longitude);
 
       setCurrentLocation(coordinate);
+      setCurrentLocationAddress(address ?? null);
       return coordinate;
     } catch {
+      setCurrentLocationAddress(null);
       if (showErrors) {
         Alert.alert("Standortfehler", "Dein aktueller Standort konnte nicht gelesen werden.");
       }
@@ -718,7 +722,6 @@ export default function App() {
         {screen === "dashboard" && (
           <DashboardScreen
             bottomSheetAnimatedStyle={bottomSheetAnimatedStyle}
-            coordinateLabel={coordinateLabel}
             currentAddressLabel={currentAddressLabel}
             currentLocation={currentLocation}
             isLocating={isLocating}
