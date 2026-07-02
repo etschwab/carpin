@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import * as Location from "expo-location";
+import { useEffect, useRef, useState } from "react";
 import { Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, Polyline, Region } from "react-native-maps";
 
@@ -15,9 +16,26 @@ type CarPinMapProps = {
   region: Region;
 };
 
+const HEADING_UPDATE_THRESHOLD = 6;
+
+function normalizeHeading(heading: number) {
+  if (!Number.isFinite(heading)) {
+    return 0;
+  }
+
+  return ((heading % 360) + 360) % 360;
+}
+
+function headingDelta(a: number, b: number) {
+  const difference = Math.abs(a - b) % 360;
+  return difference > 180 ? 360 - difference : difference;
+}
+
 export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, parkingSpot, region }: CarPinMapProps) {
   const mapRef = useRef<MapView | null>(null);
-  const [mapHeading, setMapHeading] = useState(0);
+  const lastAppliedHeadingRef = useRef(0);
+  const [deviceHeading, setDeviceHeading] = useState(0);
+  const [isHeadingFollowEnabled, setIsHeadingFollowEnabled] = useState(true);
   const parkingCoordinate = parkingSpot ? { latitude: parkingSpot.latitude, longitude: parkingSpot.longitude } : null;
   const routeCoordinates = currentLocation && parkingCoordinate ? [currentLocation, parkingCoordinate] : [];
 
@@ -25,14 +43,39 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
     mapRef.current?.animateToRegion(region, 350);
   }, [region.latitude, region.longitude, region.latitudeDelta, region.longitudeDelta]);
 
-  const updateHeadingFromCamera = useCallback(async () => {
-    try {
-      const camera = await mapRef.current?.getCamera();
-      setMapHeading(camera?.heading ?? 0);
-    } catch {
-      setMapHeading(0);
+  useEffect(() => {
+    if (!isHeadingFollowEnabled) {
+      mapRef.current?.animateCamera({ heading: 0 }, { duration: 250 });
+      lastAppliedHeadingRef.current = 0;
+      return;
     }
-  }, []);
+
+    let isMounted = true;
+    let subscription: Location.LocationSubscription | null = null;
+
+    Location.watchHeadingAsync((headingUpdate) => {
+      if (!isMounted) {
+        return;
+      }
+
+      const nextHeading = normalizeHeading(headingUpdate.trueHeading >= 0 ? headingUpdate.trueHeading : headingUpdate.magHeading);
+      setDeviceHeading(nextHeading);
+
+      if (headingDelta(lastAppliedHeadingRef.current, nextHeading) < HEADING_UPDATE_THRESHOLD) {
+        return;
+      }
+
+      lastAppliedHeadingRef.current = nextHeading;
+      mapRef.current?.animateCamera({ heading: nextHeading }, { duration: 220 });
+    }).then((watcher) => {
+      subscription = watcher;
+    }).catch(() => undefined);
+
+    return () => {
+      isMounted = false;
+      subscription?.remove();
+    };
+  }, [isHeadingFollowEnabled]);
 
   const handleOpenSwissParkingSearch = () => {
     const query = encodeURIComponent("Parking");
@@ -57,13 +100,7 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
         style={styles.realMap}
         initialRegion={region}
         customMapStyle={MAP_DARK_STYLE}
-        onMapReady={() => {
-          updateHeadingFromCamera().catch(() => undefined);
-        }}
-        onRegionChangeComplete={() => {
-          updateHeadingFromCamera().catch(() => undefined);
-        }}
-        rotateEnabled
+        rotateEnabled={isHeadingFollowEnabled}
         showsCompass={false}
         showsMyLocationButton={false}
         showsPointsOfInterest={false}
@@ -88,22 +125,27 @@ export function CarPinMap({ currentLocation, isLocating, onRefreshLocation, park
         )}
       </MapView>
 
-      <TouchableOpacity
-        style={customStyles.compassBadge}
-        onPress={() => {
-          mapRef.current?.animateCamera({ heading: 0 }, { duration: 250 });
-          setMapHeading(0);
-        }}
-        activeOpacity={0.8}
-      >
-        <View style={[customStyles.compassArrowWrap, { transform: [{ rotate: `${mapHeading}deg` }] }]}>
+      <View style={customStyles.compassBadge}>
+        <View style={[customStyles.compassArrowWrap, { transform: [{ rotate: `${deviceHeading}deg` }] }]}>
           <MaterialCommunityIcons name="navigation-variant" size={18} color="#20c8f4" />
         </View>
-        <Text style={customStyles.compassText}>N</Text>
-      </TouchableOpacity>
+        <Text style={customStyles.compassText}>{Math.round(deviceHeading)}°</Text>
+      </View>
 
       <View style={customStyles.buttonContainer}>
-        <TouchableOpacity style={customStyles.iconButton} onPress={handleOpenSwissParkingSearch} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={[customStyles.iconButton, isHeadingFollowEnabled && customStyles.iconButtonActive]}
+          onPress={() => setIsHeadingFollowEnabled((current) => !current)}
+          activeOpacity={0.7}
+        >
+          <MaterialCommunityIcons
+            name={isHeadingFollowEnabled ? "compass" : "compass-off-outline"}
+            size={24}
+            color={isHeadingFollowEnabled ? "#071018" : locationTextColor}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[customStyles.iconButton, customStyles.secondaryIconButton]} onPress={handleOpenSwissParkingSearch} activeOpacity={0.7}>
           <MaterialCommunityIcons name="parking" size={24} color={locationTextColor} />
         </TouchableOpacity>
 
@@ -148,6 +190,7 @@ const customStyles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     left: 16,
+    minWidth: 56,
     paddingHorizontal: 12,
     paddingVertical: 10,
     position: "absolute",
@@ -172,6 +215,9 @@ const customStyles = StyleSheet.create({
     height: 48,
     justifyContent: "center",
     width: 48
+  },
+  iconButtonActive: {
+    backgroundColor: "#20c8f4"
   },
   secondaryIconButton: {
     marginTop: 10
