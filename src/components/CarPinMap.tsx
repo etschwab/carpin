@@ -35,8 +35,8 @@ function headingDelta(a: number, b: number) {
 }
 
 function isCoordinateNearTarget(pressedCoordinate: Coordinate, targetCoordinate: Coordinate, latitudeDelta: number) {
-  const latitudeThreshold = Math.max(latitudeDelta * 0.08, 0.00035);
-  const longitudeThreshold = Math.max(latitudeDelta * 0.08, 0.00035);
+  const latitudeThreshold = Math.max(latitudeDelta * 0.018, 0.00008);
+  const longitudeThreshold = Math.max(latitudeDelta * 0.018, 0.00008);
 
   return (
     Math.abs(pressedCoordinate.latitude - targetCoordinate.latitude) <= latitudeThreshold &&
