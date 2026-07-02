@@ -11,7 +11,9 @@ type PhotoModalProps = {
   photoUri?: string | null;
 };
 
+// Foto Popup
 export function PhotoModal({ isVisible, isWideLayout = false, onClose, parkingSpot, photoUri }: PhotoModalProps) {
+  // Foto Quelle
   const visiblePhotoUri = parkingSpot?.photoUri ?? photoUri;
 
   return (
@@ -33,7 +35,7 @@ export function PhotoModal({ isVisible, isWideLayout = false, onClose, parkingSp
           {visiblePhotoUri ? <Image source={{ uri: visiblePhotoUri }} style={isWideLayout ? styles.widePhotoPreview : styles.photoPreview} /> : null}
 
           <TouchableOpacity style={isWideLayout ? styles.widePhotoCloseButton : styles.primaryButton} onPress={onClose}>
-            <Text style={styles.primaryButtonText}>Schließen</Text>
+            <Text style={styles.primaryButtonText}>Schliessen</Text>
           </TouchableOpacity>
         </View>
       </View>

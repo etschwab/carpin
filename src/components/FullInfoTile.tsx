@@ -10,6 +10,7 @@ type FullInfoTileProps = {
   value: string;
 };
 
+// Info Kachel
 export function FullInfoTile({ icon, iconElement, label, value }: FullInfoTileProps) {
   return (
     <View style={styles.fullInfoTile}>

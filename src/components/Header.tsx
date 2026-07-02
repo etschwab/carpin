@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Image, Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import { styles } from "../styles/appStyles";
-// Impressum importieren (Pfad passt perfekt zu eurer Struktur)
+// Impressum Popup
 import ImpressumScreen from "./ImpressumScreen";
 
 type HeaderProps = {
@@ -9,29 +9,29 @@ type HeaderProps = {
 };
 
 export function Header({ title }: HeaderProps) {
-  // State für die Sichtbarkeit des Impressums
+  // Popup Status
   const [impressumVisible, setImpressumVisible] = useState<boolean>(false);
 
   return (
     <View style={styles.header}>
       <View style={[styles.brandRow, customStyles.headerLayout]}>
-        {/* Eure bestehende Logo- und Titel-Sektion */}
+        {/* Logo Titel */}
         <View style={customStyles.leftContainer}>
           <Image source={require("../../carpin.png")} style={styles.logo} resizeMode="contain" />
           <Text style={styles.headerTitle}>{title}</Text>
         </View>
 
-        {/* Impressum-Button im exakten Stil der anderen Buttons (ohne grelles Leuchten) */}
+        {/* Info Knopf */}
         <TouchableOpacity 
           style={customStyles.infoButton} 
           onPress={() => setImpressumVisible(true)}
-          activeOpacity={0.7} // Gleicher Drück-Effekt (Hover/Touch) wie überall sonst
+          activeOpacity={0.7}
         >
           <Text style={customStyles.infoButtonText}>§</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Das Impressum-Modal, das sich bei Klick über alles legt */}
+      {/* Popup Fenster */}
       <ImpressumScreen 
         visible={impressumVisible} 
         onClose={() => setImpressumVisible(false)} 
@@ -40,14 +40,14 @@ export function Header({ title }: HeaderProps) {
   );
 }
 
-// Zusätzliche Styles, perfekt abgestimmt auf eure appStyles
+// Header Styles
 const customStyles = StyleSheet.create({
   headerLayout: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    paddingRight: 4, // Leicht angepasst, damit es bündig mit dem Grid abschliesst
+    paddingRight: 4,
   },
   leftContainer: {
     flexDirection: 'row',
@@ -56,15 +56,15 @@ const customStyles = StyleSheet.create({
   infoButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 34, // Passt sich der Höhe des Logos an
+    height: 34,
     width: 34,
-    borderRadius: 10, // Leicht abgerundet wie eure anderen kleinen Icons
-    backgroundColor: '#1b1b2d', // Dunkelblau (wie secondaryButton / fullInfoTile)
+    borderRadius: 10,
+    backgroundColor: '#1b1b2d',
     borderWidth: 1,
-    borderColor: '#28283c', // Diskreter, dunkler Rahmen (wie secondaryButton / fullInfoTile)
+    borderColor: '#28283c',
   },
   infoButtonText: {
-    color: '#b7b5c8', // Gleiche Textfarbe wie secondaryButtonText für 100% Konsistenz
+    color: '#b7b5c8',
     fontSize: 15,
     fontWeight: '900',
   },

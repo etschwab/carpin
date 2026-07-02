@@ -21,6 +21,7 @@ type CarPinMapProps = {
 
 const HEADING_UPDATE_THRESHOLD = 6;
 
+// Kompass Wert
 function normalizeHeading(heading: number) {
   if (!Number.isFinite(heading)) {
     return 0;
@@ -29,11 +30,13 @@ function normalizeHeading(heading: number) {
   return ((heading % 360) + 360) % 360;
 }
 
+// Kompass Abstand
 function headingDelta(a: number, b: number) {
   const difference = Math.abs(a - b) % 360;
   return difference > 180 ? 360 - difference : difference;
 }
 
+// Marker Treffer
 function isCoordinateNearTarget(pressedCoordinate: Coordinate, targetCoordinate: Coordinate, latitudeDelta: number) {
   const latitudeThreshold = Math.max(latitudeDelta * 0.009, 0.00004);
   const longitudeThreshold = Math.max(latitudeDelta * 0.009, 0.00004);
@@ -44,6 +47,7 @@ function isCoordinateNearTarget(pressedCoordinate: Coordinate, targetCoordinate:
   );
 }
 
+// Marker Ansicht
 function getNextMarkerMode(mode: MarkerDisplayMode): MarkerDisplayMode {
   if (mode === "labels") {
     return "icons";
@@ -65,6 +69,7 @@ export function CarPinMap({
   parkingSpot,
   region
 }: CarPinMapProps) {
+  // Karten Status
   const mapRef = useRef<MapView | null>(null);
   const actionMenuAnimation = useRef(new Animated.Value(0)).current;
   const lastAppliedHeadingRef = useRef(0);
@@ -80,10 +85,12 @@ export function CarPinMap({
   const parkingCoordinate = parkingSpot ? { latitude: parkingSpot.latitude, longitude: parkingSpot.longitude } : null;
   const routeCoordinates = currentLocation && parkingCoordinate ? [currentLocation, parkingCoordinate] : [];
 
+  // Karte zentriere
   useEffect(() => {
     mapRef.current?.animateToRegion(region, 350);
   }, [region.latitude, region.longitude, region.latitudeDelta, region.longitudeDelta]);
 
+  // Kompass folge
   useEffect(() => {
     if (!isHeadingFollowEnabled) {
       mapRef.current?.animateCamera({ heading: 0 }, { duration: 250 });
@@ -120,6 +127,7 @@ export function CarPinMap({
     };
   }, [isHeadingFollowEnabled]);
 
+  // Menue Animation
   useEffect(() => {
     Animated.spring(actionMenuAnimation, {
       toValue: isActionMenuOpen ? 1 : 0,
@@ -130,6 +138,7 @@ export function CarPinMap({
     }).start();
   }, [actionMenuAnimation, isActionMenuOpen]);
 
+  // Parking Suche
   const handleOpenSwissParkingSearch = () => {
     const query = encodeURIComponent("Parking");
     const regionName = encodeURIComponent("Switzerland");
@@ -144,6 +153,7 @@ export function CarPinMap({
     }
   };
 
+  // Karten Klick
   function handleMapPress(event: MapPressEvent) {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     const pressedCoordinate = { latitude, longitude };
@@ -158,6 +168,7 @@ export function CarPinMap({
     setIsActionMenuOpen(false);
   }
 
+  // Marker Popup
   function handleOpenMarkerModal() {
     if (!pendingMarkerCoordinate) {
       return;
@@ -168,6 +179,7 @@ export function CarPinMap({
     setIsMarkerModalVisible(true);
   }
 
+  // Marker sichere
   function handleSaveMarker() {
     if (!pendingMarkerCoordinate || !markerNameDraft.trim()) {
       return;
@@ -186,6 +198,7 @@ export function CarPinMap({
   const customMarkerLabelFontSize = Math.max(9, Math.min(11, customMarkerSize * 0.34));
   const customMarkerLabelPadding = Math.max(5, Math.min(8, customMarkerSize * 0.22));
 
+  // Karte UI
   return (
     <View style={styles.mapCard}>
       <MapView
@@ -202,6 +215,7 @@ export function CarPinMap({
         showsMyLocationButton={false}
         showsPointsOfInterest={false}
       >
+        {/* Eigener Standort */}
         {currentLocation && (
           <Marker coordinate={currentLocation} title="Dein Standort">
             <View style={styles.userMarker}>
@@ -210,6 +224,7 @@ export function CarPinMap({
           </Marker>
         )}
 
+        {/* Parking Marker */}
         {parkingCoordinate && (
           <>
             {routeCoordinates.length === 2 && <Polyline coordinates={routeCoordinates} strokeColor="#20c8f4" strokeWidth={5} />}
@@ -221,6 +236,7 @@ export function CarPinMap({
           </>
         )}
 
+        {/* Eigene Marker */}
         {markerDisplayMode !== "hidden" &&
           customMarkers.map((marker) => (
             <Marker key={marker.id} coordinate={marker} title={marker.name}>
@@ -241,6 +257,7 @@ export function CarPinMap({
             </Marker>
           ))}
 
+        {/* Neuer Marker */}
         {pendingMarkerCoordinate ? (
           <Marker coordinate={pendingMarkerCoordinate}>
             <View style={customStyles.pendingMarkerWrap}>
@@ -250,6 +267,7 @@ export function CarPinMap({
         ) : null}
       </MapView>
 
+      {/* Kompass Anzeige */}
       <View style={customStyles.compassBadge}>
         <View style={[customStyles.compassArrowWrap, { transform: [{ rotate: `${compassRotation}deg` }] }]}>
           <MaterialCommunityIcons name="navigation-variant" size={18} color="#20c8f4" />
@@ -257,6 +275,7 @@ export function CarPinMap({
         <Text style={customStyles.compassText}>{Math.round(deviceHeading)} deg</Text>
       </View>
 
+      {/* Karten Aktionen */}
       <View style={customStyles.buttonContainer}>
         <TouchableOpacity
           style={[customStyles.iconButton, isActionMenuOpen && customStyles.iconButtonActive]}
@@ -339,6 +358,7 @@ export function CarPinMap({
         ))}
       </View>
 
+      {/* Marker Formular */}
       <Modal animationType="fade" transparent visible={isMarkerModalVisible} onRequestClose={() => setIsMarkerModalVisible(false)}>
         <Pressable style={customStyles.modalBackdrop} onPress={() => setIsMarkerModalVisible(false)}>
           <Pressable style={customStyles.modalCard} onPress={() => undefined}>
@@ -390,6 +410,7 @@ export function CarPinMap({
   );
 }
 
+// Karten Styles
 const customStyles = StyleSheet.create({
   buttonContainer: {
     alignItems: "center",

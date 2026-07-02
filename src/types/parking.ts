@@ -1,3 +1,4 @@
+// Fahrzeug Typen
 export type VehicleType = "Auto" | "Fahrrad" | "Motorrad" | "Scooter";
 
 export type Vehicle = {
@@ -6,11 +7,13 @@ export type Vehicle = {
   type: VehicleType;
 };
 
+// GPS Punkt
 export type Coordinate = {
   latitude: number;
   longitude: number;
 };
 
+// Karten Marker
 export type CustomMapMarker = Coordinate & {
   id: string;
   color: string;
@@ -18,6 +21,7 @@ export type CustomMapMarker = Coordinate & {
   name: string;
 };
 
+// Parking Daten
 export type ParkingSpot = Coordinate & {
   id: string;
   vehicleId: string;
@@ -29,6 +33,7 @@ export type ParkingSpot = Coordinate & {
 
 export type ParkingHistoryItem = ParkingSpot;
 
+// Screen Namen
 export type Screen = "dashboard" | "timer" | "vehicles" | "history";
 export type SheetMode = "compact" | "mid" | "full";
 export type PhotoSource = "camera" | "library";

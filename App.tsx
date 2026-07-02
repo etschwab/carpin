@@ -29,6 +29,7 @@ import type { Coordinate, CustomMapMarker, ParkingHistoryItem, ParkingSpot, Phot
 import { reverseGeocode } from "./src/utils/location";
 import { formatTime, parseMinutes } from "./src/utils/time";
 
+// Mitteilige
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -38,6 +39,7 @@ Notifications.setNotificationHandler({
   })
 });
 
+// Querformat Navi
 const WIDE_NAV_ITEMS: Array<{ icon: keyof typeof MaterialCommunityIcons.glyphMap; label: string; screen: Screen }> = [
   { icon: "map-marker-outline", label: "Karte", screen: "dashboard" },
   { icon: "car-outline", label: "Fahrzeuge", screen: "vehicles" },
@@ -65,7 +67,9 @@ function WideNavButton({
 }
 
 export default function App() {
+  // Bildschirmgroessi
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
+  // App Zuestand
   const [screen, setScreen] = useState<Screen>("dashboard");
   const [vehicles, setVehicles] = useState<Vehicle[]>(DEFAULT_VEHICLES);
   const [selectedVehicleId, setSelectedVehicleId] = useState(DEFAULT_VEHICLES[0].id);
@@ -95,6 +99,7 @@ export default function App() {
   const hasShownNotificationAlertRef = useRef(false);
   const isWideLayout = windowWidth > windowHeight || windowWidth >= 780;
 
+  // Speicher lade
   useEffect(() => {
     async function loadState() {
       const [storedVehicles, storedParkingSpot, storedParkingHistory, storedCustomMarkers, storedTimerEnd, storedTimerStartedAt, storedTimerSpotId] =
@@ -148,10 +153,12 @@ export default function App() {
     refreshCurrentLocation(true).catch(() => undefined);
   }, []);
 
+  // Fahrzeuge sichere
   useEffect(() => {
     AsyncStorage.setItem(STORAGE_KEYS.vehicles, JSON.stringify(vehicles)).catch(() => undefined);
   }, [vehicles]);
 
+  // Parking sichere
   useEffect(() => {
     if (parkingSpot) {
       AsyncStorage.setItem(STORAGE_KEYS.parkingSpot, JSON.stringify(parkingSpot)).catch(() => undefined);
@@ -160,14 +167,17 @@ export default function App() {
     }
   }, [parkingSpot]);
 
+  // Verlauf sichere
   useEffect(() => {
     AsyncStorage.setItem(STORAGE_KEYS.parkingHistory, JSON.stringify(parkingHistory)).catch(() => undefined);
   }, [parkingHistory]);
 
+  // Marker sichere
   useEffect(() => {
     AsyncStorage.setItem(STORAGE_KEYS.customMarkers, JSON.stringify(customMarkers)).catch(() => undefined);
   }, [customMarkers]);
 
+  // Timer sichere
   useEffect(() => {
     if (timerEnd) {
       AsyncStorage.setItem(STORAGE_KEYS.timerEnd, timerEnd).catch(() => undefined);
@@ -176,6 +186,7 @@ export default function App() {
     }
   }, [timerEnd]);
 
+  // Timerstart sichere
   useEffect(() => {
     if (timerStartedAt) {
       AsyncStorage.setItem(STORAGE_KEYS.timerStartedAt, timerStartedAt).catch(() => undefined);
@@ -184,6 +195,7 @@ export default function App() {
     }
   }, [timerStartedAt]);
 
+  // Timerplatz sichere
   useEffect(() => {
     if (timerSpotId) {
       AsyncStorage.setItem(STORAGE_KEYS.timerSpotId, timerSpotId).catch(() => undefined);
@@ -192,11 +204,13 @@ export default function App() {
     }
   }, [timerSpotId]);
 
+  // Uhr lauft
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
 
+  // Sheet bewege
   useEffect(() => {
     Animated.spring(sheetHeight, {
       toValue: SHEET_HEIGHTS[sheetMode],
@@ -209,6 +223,7 @@ export default function App() {
     });
   }, [sheetHeight, sheetMode]);
 
+  // Fahrzeugwahl
   const selectedVehicle = useMemo(
     () => vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ?? vehicles[0],
     [selectedVehicleId, vehicles]
@@ -218,6 +233,7 @@ export default function App() {
     [parkingSpot?.vehicleId, vehicles]
   );
 
+  // Timerstatus
   const timerSpotMatchesActiveSpot = Boolean(parkingSpot && timerSpotId === parkingSpot.id);
   const remainingMs = timerEnd ? new Date(timerEnd).getTime() - now : 0;
   const timerIsActive = Boolean(timerEnd && remainingMs > 0);
@@ -232,6 +248,7 @@ export default function App() {
 
     return Number.isFinite(totalMinutes) && totalMinutes > 0 ? totalMinutes : null;
   }, [timerEnd, timerStartedAt]);
+  // Kartenfokus
   const activeMapCoordinate = parkingSpot ?? currentLocation ?? FALLBACK_COORDINATE;
   const mapRegion = useMemo<Region>(
     () => ({
@@ -245,6 +262,7 @@ export default function App() {
   const currentAddressLabel =
     parkingSpot?.address || currentLocationAddress || (currentLocation ? "Aktueller Standort" : "Standort wird gesucht");
   const bottomSheetAnimatedStyle = { height: sheetHeight };
+  // Sheet Grenze
   function clampSheetHeight(height: number) {
     return Math.min(SHEET_HEIGHTS.full, Math.max(SHEET_HEIGHTS.compact, height));
   }
@@ -270,6 +288,7 @@ export default function App() {
     setSheetMode(mode);
   }
 
+  // Sheet ziehe
   const sheetPanResponder = useMemo(
     () =>
       PanResponder.create({
@@ -310,6 +329,7 @@ export default function App() {
     [sheetHeight, sheetMode]
   );
 
+  // Reminder sync
   useEffect(() => {
     async function syncTimerNotifications() {
       if (!isHydrated) {
@@ -402,6 +422,7 @@ export default function App() {
     });
   }, [isHydrated, parkedVehicle?.name, parkingSpot, timerEnd, timerSpotId]);
 
+  // Standort hole
   async function getDeviceLocation(showErrors: boolean) {
     setIsLocating(true);
 
@@ -441,6 +462,7 @@ export default function App() {
     return getDeviceLocation(!silent);
   }
 
+  // History pflege
   function saveSpotToHistory(spot: ParkingHistoryItem) {
     setParkingHistory((currentHistory) =>
       [spot, ...currentHistory.filter((historySpot) => historySpot.id !== spot.id)].slice(0, MAX_PARKING_HISTORY_ITEMS)
@@ -453,6 +475,7 @@ export default function App() {
     );
   }
 
+  // Marker fuege
   function addCustomMarker(coordinate: Coordinate, name: string, color: string) {
     const trimmedName = name.trim();
     if (!trimmedName) {
@@ -472,6 +495,7 @@ export default function App() {
     setCustomMarkers((currentMarkers) => [nextMarker, ...currentMarkers]);
   }
 
+  // Parking sichere
   async function saveParkingSpot() {
     if (!selectedVehicle) {
       Alert.alert("Kein Fahrzeug", "Bitte füge zuerst ein Fahrzeug hinzu.");
@@ -513,6 +537,7 @@ export default function App() {
     }
   }
 
+  // Foto waehle
   async function pickPhoto(source: PhotoSource) {
     const permission =
       source === "camera"
@@ -541,6 +566,7 @@ export default function App() {
     }
   }
 
+  // Beschrieb sichere
   function updateParkingSpotDescription(value: string) {
     if (!parkingSpot) {
       return;
@@ -556,6 +582,7 @@ export default function App() {
     updateSpotInHistory(updatedParkingSpot);
   }
 
+  // Route oeffne
   function openRoute() {
     if (!parkingSpot) {
       return;
@@ -601,6 +628,7 @@ export default function App() {
     ]);
   }
 
+  // Parking teile
   async function shareParkingSpot() {
     if (!parkingSpot) {
       return;
@@ -629,6 +657,7 @@ export default function App() {
     }
   }
 
+  // Timer starte
   function startTimer(minutes: number) {
     if (!parkingSpot) {
       Alert.alert("Kein Parkplatz", "Speichere zuerst einen Parkplatz, damit der Timer zugeteilt werden kann.");
@@ -673,6 +702,7 @@ export default function App() {
     startTimer(minutes);
   }
 
+  // Parking beende
   function clearParkingSpot() {
     if (parkingSpot?.id === timerSpotId) {
       setTimerEnd(null);
@@ -700,6 +730,7 @@ export default function App() {
     });
   }
 
+  // Fahrzeug Form
   function resetVehicleForm() {
     setEditingVehicleId(null);
     setNewVehicleName("");
@@ -740,6 +771,7 @@ export default function App() {
     resetVehicleForm();
   }
 
+  // Fahrzeug loesche
   function deleteVehicle(vehicleId: string) {
     const vehicle = vehicles.find((currentVehicle) => currentVehicle.id === vehicleId);
     if (!vehicle) {
@@ -780,6 +812,7 @@ export default function App() {
     ]);
   }
 
+  // Screen waehle
   function renderActiveScreen(isWideScreen = false) {
     if (screen === "dashboard") {
       return (
@@ -868,6 +901,7 @@ export default function App() {
     );
   }
 
+  // Breit Layout
   if (isWideLayout) {
     return (
       <SafeAreaView style={styles.wideSafeArea}>
@@ -919,6 +953,7 @@ export default function App() {
     );
   }
 
+  // Handy Layout
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />

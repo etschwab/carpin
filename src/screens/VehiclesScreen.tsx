@@ -19,6 +19,7 @@ type VehiclesScreenProps = {
   vehicles: Vehicle[];
 };
 
+// Fahrzeug Screen
 export function VehiclesScreen({
   editingVehicleId,
   newVehicleName,
@@ -35,6 +36,7 @@ export function VehiclesScreen({
 }: VehiclesScreenProps) {
   return (
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      {/* Fahrzeug Formular */}
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>{editingVehicleId ? "Fahrzeug bearbeiten" : "Neues Fahrzeug"}</Text>
         <TextInput
@@ -69,6 +71,7 @@ export function VehiclesScreen({
         </View>
       </View>
 
+      {/* Fahrzeug Liste */}
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>Gespeicherte Fahrzeuge</Text>
         {vehicles.map((vehicle) => (

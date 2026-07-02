@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
+  // Grund Layout
   safeArea: {
     flex: 1,
     backgroundColor: "#080911"
@@ -14,6 +15,7 @@ export const styles = StyleSheet.create({
   hidden: {
     display: "none"
   },
+  // Quer Layout
   wideSafeArea: {
     backgroundColor: "#080911",
     flex: 1
@@ -112,6 +114,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     overflow: "hidden"
   },
+  // Header Tabs
   header: {
     alignItems: "center",
     flexDirection: "row",
@@ -160,6 +163,7 @@ export const styles = StyleSheet.create({
   tabTextActive: {
     color: "#071018"
   },
+  // Karten Layout
   mapScreen: {
     flex: 1,
     marginHorizontal: -16
@@ -424,6 +428,7 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "900"
   },
+  // Zieh Sheet
   bottomSheet: {
     backgroundColor: "#11111d",
     borderColor: "#222238",
@@ -508,6 +513,7 @@ export const styles = StyleSheet.create({
     gap: 10,
     marginTop: 14
   },
+  // Info Kacheln
   fullInfoTile: {
     backgroundColor: "#1b1b2d",
     borderColor: "#28283c",
@@ -586,6 +592,7 @@ export const styles = StyleSheet.create({
     fontWeight: "900",
     marginTop: 4
   },
+  // Fahrzeug Picker
   vehicleStrip: {
     alignItems: "flex-start",
     gap: 8,
@@ -632,6 +639,7 @@ export const styles = StyleSheet.create({
   vehiclePillTextActive: {
     color: "#071018"
   },
+  // Buttons
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#20c8f4",
@@ -705,6 +713,7 @@ export const styles = StyleSheet.create({
     lineHeight: 19,
     marginTop: 10
   },
+  // Kleine Werte
   metricsRow: {
     flexDirection: "row",
     gap: 10,
@@ -794,6 +803,7 @@ export const styles = StyleSheet.create({
   timerKeyboardView: {
     flex: 1
   },
+  // Timer Screen
   timerContent: {
     flexGrow: 1,
     paddingBottom: 150
@@ -903,6 +913,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "900"
   },
+  // Timer Popup
   customTimerOpenButton: {
     alignItems: "center",
     backgroundColor: "#151523",
@@ -1097,6 +1108,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "900"
   },
+  // Formular Panels
   panel: {
     backgroundColor: "#151523",
     borderColor: "#242439",
@@ -1153,6 +1165,7 @@ export const styles = StyleSheet.create({
   typeChipTextActive: {
     color: "#071018"
   },
+  // Fahrzeug Liste
   vehicleListItem: {
     alignItems: "center",
     borderTopColor: "#242439",
@@ -1185,6 +1198,7 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900"
   },
+  // Foto Popup
   photoModalBackdrop: {
     backgroundColor: "rgba(0, 0, 0, 0.74)",
     flex: 1,
@@ -1262,6 +1276,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20
   },
+  // History
   historyHeaderRow: {
     alignItems: "center",
     flexDirection: "row",

@@ -12,6 +12,7 @@ type HistoryScreenProps = {
   vehicles: Vehicle[];
 };
 
+// History Screen
 export function HistoryScreen({
   history,
   onClearHistory,
@@ -19,10 +20,12 @@ export function HistoryScreen({
   onOpenRoute,
   vehicles
 }: HistoryScreenProps) {
+  // Fahrzeug Name
   function getVehicleName(vehicleId: string) {
     return vehicles.find((vehicle) => vehicle.id === vehicleId)?.name ?? "Fahrzeug";
   }
 
+  // Leer Zustand
   if (history.length === 0) {
     return (
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -34,6 +37,7 @@ export function HistoryScreen({
     );
   }
 
+  // History Liste
   return (
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.historyHeaderRow}>
