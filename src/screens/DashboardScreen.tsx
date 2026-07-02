@@ -460,6 +460,43 @@ export function DashboardScreen({
           </Text>
         </TouchableOpacity>
 
+        <View style={styles.wideMapActionTray}>
+          {parkingSpot ? (
+            <>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={openDescriptionModal}>
+                <Text style={styles.wideMapActionButtonText}>Beschreibung</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.wideMapActionButton}
+                onPress={parkingSpot.photoUri ? onShowPhoto : () => onPickPhoto("camera")}
+              >
+                <Text style={styles.wideMapActionButtonText}>{parkingSpot.photoUri ? "Foto zeigen" : "Foto"}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={onOpenTimer}>
+                <Text style={styles.wideMapActionButtonText}>Timer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={onShareParking}>
+                <Text style={styles.wideMapActionButtonText}>Teilen</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.wideMapActionButton, styles.wideMapDangerButton]} onPress={onClearParkingSpot}>
+                <Text style={[styles.wideMapActionButtonText, styles.wideMapDangerButtonText]}>Beenden</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={openDescriptionModal}>
+                <Text style={styles.wideMapActionButtonText}>Beschreibung</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("camera")}>
+                <Text style={styles.wideMapActionButtonText}>Foto</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.wideMapActionButton} onPress={() => onPickPhoto("library")}>
+                <Text style={styles.wideMapActionButtonText}>Galerie</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+
         <Modal
           animationType="slide"
           onRequestClose={() => setIsDescriptionModalVisible(false)}

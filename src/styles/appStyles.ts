@@ -19,45 +19,45 @@ export const styles = StyleSheet.create({
     backgroundColor: "#0d0d19",
     flex: 1,
     flexDirection: "row",
-    padding: 12
+    padding: 8
   },
   wideSidebar: {
     backgroundColor: "#16161f",
     borderColor: "#2a2a3b",
-    borderBottomLeftRadius: 28,
+    borderBottomLeftRadius: 22,
     borderRightWidth: 1,
-    borderTopLeftRadius: 28,
-    padding: 26,
-    width: 320
+    borderTopLeftRadius: 22,
+    padding: 14,
+    width: 252
   },
   wideBrandRow: {
     alignItems: "center",
     flexDirection: "row",
-    gap: 12,
-    marginBottom: 26
+    gap: 10,
+    marginBottom: 14
   },
   wideBrandTitle: {
     color: "#f7f8ff",
-    fontSize: 24,
+    fontSize: 21,
     fontWeight: "900"
   },
   wideNavList: {
-    gap: 10
+    gap: 5
   },
   wideNavButton: {
     alignItems: "center",
-    borderRadius: 18,
+    borderRadius: 14,
     flexDirection: "row",
-    gap: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 18
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 11
   },
   wideNavButtonActive: {
     backgroundColor: "#123541"
   },
   wideNavText: {
     color: "#8f8da0",
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "800"
   },
   wideNavTextActive: {
@@ -68,8 +68,8 @@ export const styles = StyleSheet.create({
   },
   wideStatusCard: {
     backgroundColor: "#242433",
-    borderRadius: 22,
-    padding: 18
+    borderRadius: 18,
+    padding: 13
   },
   wideStatusEyebrow: {
     color: "#8f8da0",
@@ -80,32 +80,32 @@ export const styles = StyleSheet.create({
   },
   wideStatusTitle: {
     color: "#ffffff",
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: "900",
-    marginTop: 14
+    marginTop: 8
   },
   wideStatusMeta: {
     color: "#a7a5b8",
-    fontSize: 13,
-    lineHeight: 18,
-    marginTop: 8
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 5
   },
   wideStatusButton: {
     alignItems: "center",
     backgroundColor: "#20c8f4",
-    borderRadius: 18,
-    marginTop: 16,
-    paddingVertical: 14
+    borderRadius: 14,
+    marginTop: 10,
+    paddingVertical: 10
   },
   wideStatusButtonText: {
     color: "#071018",
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "900"
   },
   wideContent: {
     backgroundColor: "#10101b",
-    borderBottomRightRadius: 28,
-    borderTopRightRadius: 28,
+    borderBottomRightRadius: 22,
+    borderTopRightRadius: 22,
     flex: 1,
     overflow: "hidden"
   },
@@ -168,23 +168,53 @@ export const styles = StyleSheet.create({
   wideMapPrimaryButton: {
     alignItems: "center",
     backgroundColor: "#20c8f4",
-    borderRadius: 24,
-    bottom: 32,
+    borderRadius: 18,
+    bottom: 18,
     flexDirection: "row",
-    gap: 12,
-    paddingHorizontal: 34,
-    paddingVertical: 20,
+    gap: 9,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
     position: "absolute",
-    right: 32
+    right: 18
   },
   wideMapPrimaryButtonText: {
     color: "#071018",
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "900"
+  },
+  wideMapActionTray: {
+    alignItems: "center",
+    bottom: 84,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+    left: 18,
+    maxWidth: 310,
+    position: "absolute"
+  },
+  wideMapActionButton: {
+    backgroundColor: "rgba(17, 17, 29, 0.92)",
+    borderColor: "#242439",
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  wideMapActionButtonText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  wideMapDangerButton: {
+    backgroundColor: "rgba(43, 27, 35, 0.94)",
+    borderColor: "#6f2b3c"
+  },
+  wideMapDangerButtonText: {
+    color: "#ff8a9a"
   },
   mapCard: {
     flex: 1,
-    minHeight: 520,
+    minHeight: 0,
     overflow: "hidden",
     position: "relative"
   },
