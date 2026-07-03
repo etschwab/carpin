@@ -2,7 +2,7 @@ import { Dimensions } from "react-native";
 
 import type { Coordinate, MarkerDisplayMode, SheetMode, Vehicle, VehicleType } from "../types/parking";
 
-// Lokaler Speicher
+// Storage / AsyncStorage / lokale Daten Keys
 export const STORAGE_KEYS = {
   vehicles: "carpin:vehicles",
   parkingSpot: "carpin:parkingSpot",
@@ -13,35 +13,35 @@ export const STORAGE_KEYS = {
   timerSpotId: "carpin:timerSpotId"
 };
 
-// Timer Werte
+// Timer / Presets / schnelle Parkdauer
 export const TIMER_REMINDER_MINUTES = [60, 30, 10, 5] as const;
 export const MAX_PARKING_HISTORY_ITEMS = 30;
 
-// Auswahl Listen
+// Auswahl / Fahrzeugtypen / Marker Modus
 export const VEHICLE_TYPES: VehicleType[] = ["Auto", "Fahrrad", "Motorrad", "Scooter"];
 export const MARKER_DISPLAY_MODES: MarkerDisplayMode[] = ["labels", "icons", "hidden"];
 export const MARKER_COLOR_OPTIONS = ["#20c8f4", "#4ade80", "#f59e0b", "#ef4444", "#a855f7", "#f97316"] as const;
 
-// Start Fahrzeuge
+// Fahrzeug / Start Fahrzeuge / Demo Daten
 export const DEFAULT_VEHICLES: Vehicle[] = [
   { id: "vehicle-auto", name: "VW Golf", type: "Auto" },
   { id: "vehicle-bike", name: "Tims Fahrrad", type: "Fahrrad" }
 ];
 
-// Ersatz Standort
+// GPS / Location / Ersatz Standort Schweiz
 export const FALLBACK_COORDINATE: Coordinate = {
   latitude: 47.3769,
   longitude: 8.5417
 };
 
-// Sheet Hoehen
+// Bottom Sheet / Hoehen / Kompakt Halb Voll
 export const SHEET_HEIGHTS: Record<SheetMode, number> = {
   compact: 132,
   mid: 348,
   full: Math.round(Dimensions.get("window").height * 0.86)
 };
 
-// Karten Style
+// Map / Karten Style / dunkle Karte
 export const MAP_DARK_STYLE = [
   { elementType: "geometry", stylers: [{ color: "#151523" }] },
   { elementType: "labels.text.fill", stylers: [{ color: "#b7b5c8" }] },

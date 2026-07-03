@@ -11,9 +11,9 @@ type PhotoModalProps = {
   photoUri?: string | null;
 };
 
-// Foto Popup
+// Foto / Popup / Parkplatzbild anzeigen
 export function PhotoModal({ isVisible, isWideLayout = false, onClose, parkingSpot, photoUri }: PhotoModalProps) {
-  // Foto Quelle
+  // Foto / Quelle / Parkplatzfoto oder Vorschau
   const visiblePhotoUri = parkingSpot?.photoUri ?? photoUri;
 
   return (

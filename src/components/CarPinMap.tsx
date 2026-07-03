@@ -21,7 +21,7 @@ type CarPinMapProps = {
 
 const HEADING_UPDATE_THRESHOLD = 6;
 
-// Kompass Wert
+// GPS / Kompass / Richtung Wert
 function normalizeHeading(heading: number) {
   if (!Number.isFinite(heading)) {
     return 0;
@@ -30,13 +30,13 @@ function normalizeHeading(heading: number) {
   return ((heading % 360) + 360) % 360;
 }
 
-// Kompass Abstand
+// GPS / Kompass / Distanz Berechnung
 function headingDelta(a: number, b: number) {
   const difference = Math.abs(a - b) % 360;
   return difference > 180 ? 360 - difference : difference;
 }
 
-// Marker Treffer
+// Map / Marker / Treffer Radius
 function isCoordinateNearTarget(pressedCoordinate: Coordinate, targetCoordinate: Coordinate, latitudeDelta: number) {
   const latitudeThreshold = Math.max(latitudeDelta * 0.009, 0.00004);
   const longitudeThreshold = Math.max(latitudeDelta * 0.009, 0.00004);
@@ -47,7 +47,7 @@ function isCoordinateNearTarget(pressedCoordinate: Coordinate, targetCoordinate:
   );
 }
 
-// Marker Ansicht
+// Map / Marker / Anzeige Modus
 function getNextMarkerMode(mode: MarkerDisplayMode): MarkerDisplayMode {
   if (mode === "labels") {
     return "icons";
@@ -69,7 +69,7 @@ export function CarPinMap({
   parkingSpot,
   region
 }: CarPinMapProps) {
-  // Karten Status
+  // Map / Karte / GPS Status / Action Menu
   const mapRef = useRef<MapView | null>(null);
   const actionMenuAnimation = useRef(new Animated.Value(0)).current;
   const lastAppliedHeadingRef = useRef(0);
@@ -85,12 +85,12 @@ export function CarPinMap({
   const parkingCoordinate = parkingSpot ? { latitude: parkingSpot.latitude, longitude: parkingSpot.longitude } : null;
   const routeCoordinates = currentLocation && parkingCoordinate ? [currentLocation, parkingCoordinate] : [];
 
-  // Karte zentriere
+  // Map / Location / Karte auf Standort oder Parkplatz zentrieren
   useEffect(() => {
     mapRef.current?.animateToRegion(region, 350);
   }, [region.latitude, region.longitude, region.latitudeDelta, region.longitudeDelta]);
 
-  // Kompass folge
+  // GPS / Kompass / Handy Richtung verfolgen
   useEffect(() => {
     if (!isHeadingFollowEnabled) {
       mapRef.current?.animateCamera({ heading: 0 }, { duration: 250 });
@@ -127,7 +127,7 @@ export function CarPinMap({
     };
   }, [isHeadingFollowEnabled]);
 
-  // Menue Animation
+  // Map / Action Menu / Animation
   useEffect(() => {
     Animated.spring(actionMenuAnimation, {
       toValue: isActionMenuOpen ? 1 : 0,
@@ -138,7 +138,7 @@ export function CarPinMap({
     }).start();
   }, [actionMenuAnimation, isActionMenuOpen]);
 
-  // Parking Suche
+  // Map / Parking Suche / Apple Maps Parkhaeuser
   const handleOpenSwissParkingSearch = () => {
     const query = encodeURIComponent("Parking");
     const regionName = encodeURIComponent("Switzerland");
@@ -153,7 +153,7 @@ export function CarPinMap({
     }
   };
 
-  // Karten Klick
+  // Map / Karten Klick / Custom Marker auswaehlen
   function handleMapPress(event: MapPressEvent) {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     const pressedCoordinate = { latitude, longitude };
@@ -168,7 +168,7 @@ export function CarPinMap({
     setIsActionMenuOpen(false);
   }
 
-  // Marker Popup
+  // Map / Marker Popup / Namen eingeben
   function handleOpenMarkerModal() {
     if (!pendingMarkerCoordinate) {
       return;
@@ -179,7 +179,7 @@ export function CarPinMap({
     setIsMarkerModalVisible(true);
   }
 
-  // Marker sichere
+  // Map / Marker speichern / Custom Marker
   function handleSaveMarker() {
     if (!pendingMarkerCoordinate || !markerNameDraft.trim()) {
       return;
@@ -198,7 +198,7 @@ export function CarPinMap({
   const customMarkerLabelFontSize = Math.max(9, Math.min(11, customMarkerSize * 0.34));
   const customMarkerLabelPadding = Math.max(5, Math.min(8, customMarkerSize * 0.22));
 
-  // Karte UI
+  // Map / Karte UI / Standort / Parkplatz / Route
   return (
     <View style={styles.mapCard}>
       <MapView
@@ -410,7 +410,7 @@ export function CarPinMap({
   );
 }
 
-// Karten Styles
+// Map / Karten Styles
 const customStyles = StyleSheet.create({
   buttonContainer: {
     alignItems: "center",

@@ -8,7 +8,7 @@ type TabButtonProps = {
   onPress: () => void;
 };
 
-// Tab Knopf
+// Navigation / Tab Button / Screen wechseln
 export function TabButton({ label, isActive, onPress }: TabButtonProps) {
   return (
     <TouchableOpacity style={[styles.tabButton, isActive && styles.tabButtonActive]} onPress={onPress}>

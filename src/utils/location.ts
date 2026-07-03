@@ -1,6 +1,6 @@
 import * as Location from "expo-location";
 
-// Adresse suche
+// GPS / Location / Adresse suchen / Reverse Geocode
 export async function reverseGeocode(latitude: number, longitude: number) {
   try {
     const [place] = await Location.reverseGeocodeAsync({ latitude, longitude });

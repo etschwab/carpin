@@ -10,7 +10,7 @@ type FullInfoTileProps = {
   value: string;
 };
 
-// Info Kachel
+// Dashboard / Info Kachel / Foto Timer Fahrzeug Status
 export function FullInfoTile({ icon, iconElement, label, value }: FullInfoTileProps) {
   return (
     <View style={styles.fullInfoTile}>
