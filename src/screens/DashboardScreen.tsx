@@ -57,7 +57,7 @@ type DashboardScreenProps = {
   vehicles: Vehicle[];
 };
 
-// Fahrzeug Icon
+// Fahrzeug / Icon / Fahrzeugtyp
 function getVehicleIcon(vehicle: Vehicle | undefined) {
   const checkName = (vehicle?.type || vehicle?.name || "").toLowerCase().trim();
 
@@ -76,7 +76,7 @@ function getVehicleIcon(vehicle: Vehicle | undefined) {
   return { iconName: "car", IconComponent: FontAwesome5 };
 }
 
-// Kachel Icon
+// Dashboard / Info Kachel / Icon
 function getInfoTileIcon(tile: "location" | "timer" | "photo") {
   if (tile === "location") {
     return <MaterialCommunityIcons color="#20c8f4" name="crosshairs-gps" size={18} />;
@@ -89,7 +89,7 @@ function getInfoTileIcon(tile: "location" | "timer" | "photo") {
   return <MaterialCommunityIcons color="#20c8f4" name="image-outline" size={18} />;
 }
 
-// Fahrzeug Wahl
+// Fahrzeug / Auswahl / Picker
 function VehicleIconSelector({
   onSelectVehicle,
   selectedVehicleId,
@@ -168,7 +168,7 @@ export function DashboardScreen({
   timerSpotMatchesActiveSpot,
   vehicles
 }: DashboardScreenProps) {
-  // Sheet Animation
+  // Bottom Sheet / Animation / Map Panel
   const vehicleIcon = getVehicleIcon(selectedVehicle);
   const VehicleInfoIcon = vehicleIcon.IconComponent;
   const fullSheetScrollRef = useRef<ScrollView | null>(null);
@@ -245,7 +245,7 @@ export function DashboardScreen({
     ]
   };
 
-  // Kompakt Sheet
+  // Bottom Sheet / Kompakt / Parkplatz Schnellaktion
   function renderCompactContent() {
     return (
       <TouchableOpacity
@@ -260,13 +260,13 @@ export function DashboardScreen({
     );
   }
 
-  // Beschrieb Popup
+  // Beschreibung / Popup / Parkplatz Notiz
   function openDescriptionModal() {
     setDescriptionDraft(parkingSpot?.description ?? parkingDescription);
     setIsDescriptionModalVisible(true);
   }
 
-  // Beschrieb OK
+  // Beschreibung / Speichern / Parkplatz Notiz
   function submitDescription() {
     if (parkingSpot) {
       onUpdateParkingSpotDescription(descriptionDraft);
@@ -276,7 +276,7 @@ export function DashboardScreen({
     setIsDescriptionModalVisible(false);
   }
 
-  // Halb Sheet
+  // Bottom Sheet / Halb / GPS Location Infos
   function renderMidContent() {
     if (parkingSpot) {
       return (
@@ -340,7 +340,7 @@ export function DashboardScreen({
     );
   }
 
-  // Voll Sheet
+  // Bottom Sheet / Voll / Details / Foto / Timer / Fahrzeug
   function renderFullContent() {
     return (
       <>
@@ -451,7 +451,7 @@ export function DashboardScreen({
     );
   }
 
-  // Quer Panel
+  // Layout / Breit / Dashboard Panel
   function renderWideDashboardPanel() {
     const photoIsSaved = Boolean(parkingSpot?.photoUri || pendingPhotoUri);
 
@@ -534,7 +534,7 @@ export function DashboardScreen({
     );
   }
 
-  // Quer Layout
+  // Layout / Breit / Map und Dashboard
   if (isWideLayout) {
     return (
       <View style={styles.wideDashboard}>
@@ -599,7 +599,7 @@ export function DashboardScreen({
     );
   }
 
-  // Alte Variante
+  // Layout / Fallback / Alte Variante
   if (false && isWideLayout) {
     return (
       <View style={styles.wideMapScreen}>
@@ -723,7 +723,7 @@ export function DashboardScreen({
     );
   }
 
-  // Handy Layout
+  // Layout / Handy / Dashboard Mobile
   return (
     <View style={styles.mapScreen}>
       <CarPinMap

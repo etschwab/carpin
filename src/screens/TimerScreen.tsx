@@ -36,7 +36,7 @@ type TimerScreenProps = {
   timerStartedAt: string | null;
 };
 
-// Zeit Eingabe
+// Timer / Zeit Eingabe / Minuten oder Uhrzeit
 function formatTimeInput(date: Date) {
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
@@ -54,7 +54,7 @@ export function TimerScreen({
   timerSpotMatchesActiveSpot,
   timerStartedAt
 }: TimerScreenProps) {
-  // Ring Werte
+  // Timer / Ring Werte / Kreis Progress
   const ringSize = 236;
   const strokeWidth = 14;
   const ringRadius = (ringSize - strokeWidth) / 2;
@@ -64,7 +64,7 @@ export function TimerScreen({
   const [isCustomModalVisible, setIsCustomModalVisible] = useState(false);
   const [customMode, setCustomMode] = useState<CustomTimerMode>("duration");
   const [untilTime, setUntilTime] = useState(() => formatTimeInput(new Date(Date.now() + 60 * 60 * 1000)));
-  // Schnellwahl
+  // Timer / Schnellwahl / Parkdauer Presets
   const presets = useMemo(
     () => [
       { label: "30 min", minutes: 30 },
@@ -73,7 +73,7 @@ export function TimerScreen({
     ],
     []
   );
-  // Ring Fortschritt
+  // Timer / Ring Fortschritt / Countdown Progress
   const timerProgress = useMemo(() => {
     if (!timerIsActive || !timerStartedAt || !timerEnd) {
       return 0;
@@ -91,7 +91,7 @@ export function TimerScreen({
   }, [remainingMs, timerEnd, timerIsActive, timerStartedAt]);
   const progressDashOffset = ringCircumference * (1 - timerProgress);
 
-  // Ring Animation
+  // Timer / Ring Animation / Kreis bewegt sich
   useEffect(() => {
     Animated.timing(animatedDashOffset, {
       toValue: progressDashOffset,
@@ -101,7 +101,7 @@ export function TimerScreen({
     }).start();
   }, [animatedDashOffset, progressDashOffset, timerIsActive]);
 
-  // Popup oeffne
+  // Timer / Popup oeffnen / Dauer oder Endzeit
   function openCustomTimerModal(mode: CustomTimerMode = timerIsActive ? "until" : "duration") {
     const suggestedEndDate = timerEnd ? new Date(timerEnd) : new Date(Date.now() + 60 * 60 * 1000);
     setUntilTime(formatTimeInput(suggestedEndDate));
@@ -109,7 +109,7 @@ export function TimerScreen({
     setIsCustomModalVisible(true);
   }
 
-  // Dauer Timer
+  // Timer / Dauer / Minuten starten
   function startDurationTimer() {
     const minutes = parseMinutes(customTimerMinutes);
     if (!minutes) {
@@ -121,7 +121,7 @@ export function TimerScreen({
     onStartTimer(minutes);
   }
 
-  // Bis Uhrzeit
+  // Timer / Bis Uhrzeit / Endzeit starten
   function startUntilTimer() {
     const normalizedTime = untilTime.trim();
     const match = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(normalizedTime);
@@ -143,7 +143,7 @@ export function TimerScreen({
     onStartTimerUntil(endDate);
   }
 
-  // Timer OK
+  // Timer / OK / Eingabe speichern
   function submitCustomTimer() {
     if (customMode === "duration") {
       startDurationTimer();
@@ -153,7 +153,7 @@ export function TimerScreen({
     startUntilTimer();
   }
 
-  // Timer UI
+  // Timer / UI / Ring / Presets / Popup
   return (
     <>
       <KeyboardAvoidingView

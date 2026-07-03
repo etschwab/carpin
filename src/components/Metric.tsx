@@ -7,7 +7,7 @@ type MetricProps = {
   value: string;
 };
 
-// Mini Wert
+// Metric / Distanz / kleine Anzeige Werte
 export function Metric({ label, value }: MetricProps) {
   return (
     <View style={styles.metric}>

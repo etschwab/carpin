@@ -19,7 +19,7 @@ type VehiclesScreenProps = {
   vehicles: Vehicle[];
 };
 
-// Fahrzeug Screen
+// Fahrzeug / Screen / Fahrzeuge verwalten
 export function VehiclesScreen({
   editingVehicleId,
   newVehicleName,
