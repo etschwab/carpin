@@ -34,6 +34,7 @@ type DashboardScreenProps = {
   onAddCustomMarker: (coordinate: Coordinate, name: string, color: string) => void;
   onChangeParkingDescription: (value: string) => void;
   onClearParkingSpot: () => void;
+  onDeleteCustomMarker: (markerId: string) => void;
   onOpenRoute: () => void;
   onOpenTimer: () => void;
   onPickPhoto: (source: PhotoSource) => void;
@@ -146,6 +147,7 @@ export function DashboardScreen({
   onAddCustomMarker,
   onChangeParkingDescription,
   onClearParkingSpot,
+  onDeleteCustomMarker,
   onOpenRoute,
   onOpenTimer,
   onPickPhoto,
@@ -545,6 +547,7 @@ export function DashboardScreen({
             currentLocation={currentLocation}
             isLocating={isLocating}
             onAddCustomMarker={onAddCustomMarker}
+            onDeleteCustomMarker={onDeleteCustomMarker}
             onRefreshLocation={onRefreshCurrentLocation}
             parkingSpot={parkingSpot}
             region={mapRegion}
@@ -608,6 +611,7 @@ export function DashboardScreen({
           currentLocation={currentLocation}
           isLocating={isLocating}
           onAddCustomMarker={onAddCustomMarker}
+          onDeleteCustomMarker={onDeleteCustomMarker}
           onRefreshLocation={onRefreshCurrentLocation}
           parkingSpot={parkingSpot}
           region={mapRegion}
@@ -731,6 +735,7 @@ export function DashboardScreen({
         currentLocation={currentLocation}
         isLocating={isLocating}
         onAddCustomMarker={onAddCustomMarker}
+        onDeleteCustomMarker={onDeleteCustomMarker}
         onRefreshLocation={onRefreshCurrentLocation}
         parkingSpot={parkingSpot}
         region={mapRegion}

@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Linking, Modal, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Animated, Linking, Modal, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, Polyline, Region } from "react-native-maps";
 import type { MapPressEvent } from "react-native-maps";
 
@@ -14,6 +14,7 @@ type CarPinMapProps = {
   customMarkers: CustomMapMarker[];
   isLocating: boolean;
   onAddCustomMarker: (coordinate: Coordinate, name: string, color: string) => void;
+  onDeleteCustomMarker: (markerId: string) => void;
   onRefreshLocation: () => Promise<Coordinate | null>;
   parkingSpot: ParkingSpot | null;
   region: Region;
@@ -65,6 +66,7 @@ export function CarPinMap({
   customMarkers,
   isLocating,
   onAddCustomMarker,
+  onDeleteCustomMarker,
   onRefreshLocation,
   parkingSpot,
   region
@@ -79,6 +81,8 @@ export function CarPinMap({
   const [markerDisplayMode, setMarkerDisplayMode] = useState<MarkerDisplayMode>("labels");
   const [pendingMarkerCoordinate, setPendingMarkerCoordinate] = useState<Coordinate | null>(null);
   const [isMarkerModalVisible, setIsMarkerModalVisible] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState<CustomMapMarker | null>(null);
+  const [isMarkerDetailsVisible, setIsMarkerDetailsVisible] = useState(false);
   const [markerNameDraft, setMarkerNameDraft] = useState("");
   const [markerColorDraft, setMarkerColorDraft] = useState<string>(MARKER_COLOR_OPTIONS[0]);
   const [visibleLatitudeDelta, setVisibleLatitudeDelta] = useState(region.latitudeDelta);
@@ -164,6 +168,8 @@ export function CarPinMap({
     }
 
     setPendingMarkerCoordinate(pressedCoordinate);
+    setSelectedMarker(null);
+    setIsMarkerDetailsVisible(false);
     setIsMarkerModalVisible(false);
     setIsActionMenuOpen(false);
   }
@@ -190,6 +196,40 @@ export function CarPinMap({
     setPendingMarkerCoordinate(null);
     setMarkerNameDraft("");
     setMarkerColorDraft(MARKER_COLOR_OPTIONS[0]);
+  }
+
+  function handleMarkerPress(marker: CustomMapMarker) {
+    setSelectedMarker(marker);
+    setIsMarkerDetailsVisible(true);
+    setPendingMarkerCoordinate(null);
+    setIsMarkerModalVisible(false);
+    setIsActionMenuOpen(false);
+  }
+
+  function closeMarkerDetails() {
+    setIsMarkerDetailsVisible(false);
+    setSelectedMarker(null);
+  }
+
+  function handleDeleteMarker() {
+    if (!selectedMarker) {
+      return;
+    }
+
+    Alert.alert("Markierung löschen", `Möchtest du "${selectedMarker.name}" wirklich löschen?`, [
+      {
+        style: "cancel",
+        text: "Abbrechen"
+      },
+      {
+        onPress: () => {
+          onDeleteCustomMarker(selectedMarker.id);
+          closeMarkerDetails();
+        },
+        style: "destructive",
+        text: "Löschen"
+      }
+    ]);
   }
 
   const locationTextColor = StyleSheet.flatten(styles.locationButtonText)?.color || "#b7b5c8";
@@ -239,7 +279,15 @@ export function CarPinMap({
         {/* Eigene Marker */}
         {markerDisplayMode !== "hidden" &&
           customMarkers.map((marker) => (
-            <Marker key={marker.id} coordinate={marker} title={marker.name}>
+            <Marker
+              key={marker.id}
+              coordinate={marker}
+              title={marker.name}
+              onPress={(event) => {
+                event.stopPropagation?.();
+                handleMarkerPress(marker);
+              }}
+            >
               <View style={customStyles.customMarkerWrap}>
                 {markerDisplayMode === "labels" ? (
                   <Text
@@ -406,6 +454,29 @@ export function CarPinMap({
           </Pressable>
         </Pressable>
       </Modal>
+
+      <Modal animationType="fade" transparent visible={isMarkerDetailsVisible} onRequestClose={closeMarkerDetails}>
+        <Pressable style={customStyles.modalBackdrop} onPress={closeMarkerDetails}>
+          <Pressable style={customStyles.modalCard} onPress={() => undefined}>
+            <Text style={customStyles.modalTitle}>Markierung ausgewählt</Text>
+            <Text style={customStyles.modalSubtitle}>Du kannst diese Markierung löschen, wenn du sie nicht mehr brauchst.</Text>
+
+            <View style={customStyles.markerPreviewRow}>
+              <MaterialCommunityIcons name="map-marker" size={28} color={selectedMarker?.color || "#20c8f4"} />
+              <Text style={customStyles.markerPreviewText}>{selectedMarker?.name || ""}</Text>
+            </View>
+
+            <View style={customStyles.modalActions}>
+              <TouchableOpacity style={customStyles.modalSecondaryButton} onPress={closeMarkerDetails} activeOpacity={0.8}>
+                <Text style={customStyles.modalSecondaryButtonText}>Schliessen</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={customStyles.modalDangerButton} onPress={handleDeleteMarker} activeOpacity={0.8}>
+                <Text style={customStyles.modalDangerButtonText}>Löschen</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -520,6 +591,24 @@ const customStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 13
   },
+  markerPreviewRow: {
+    alignItems: "center",
+    backgroundColor: "#1b1b2d",
+    borderColor: "#28283c",
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 14
+  },
+  markerPreviewText: {
+    color: "#ffffff",
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "800"
+  },
   colorLabel: {
     color: "#ffffff",
     fontSize: 13,
@@ -554,8 +643,21 @@ const customStyles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 13
   },
+  modalDangerButton: {
+    alignItems: "center",
+    backgroundColor: "#ff5d73",
+    borderRadius: 14,
+    flex: 1,
+    justifyContent: "center",
+    paddingVertical: 13
+  },
   modalPrimaryButtonDisabled: {
     opacity: 0.45
+  },
+  modalDangerButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "900"
   },
   modalPrimaryButtonText: {
     color: "#071018",

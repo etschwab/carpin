@@ -495,6 +495,10 @@ export default function App() {
     setCustomMarkers((currentMarkers) => [nextMarker, ...currentMarkers]);
   }
 
+  function deleteCustomMarker(markerId: string) {
+    setCustomMarkers((currentMarkers) => currentMarkers.filter((marker) => marker.id !== markerId));
+  }
+
   // Parkplatz / Parking / GPS Standort speichern
   async function saveParkingSpot() {
     if (!selectedVehicle) {
@@ -827,6 +831,7 @@ export default function App() {
           mapRegion={mapRegion}
           onChangeParkingDescription={setParkingDescription}
           onAddCustomMarker={addCustomMarker}
+          onDeleteCustomMarker={deleteCustomMarker}
           onClearParkingSpot={clearParkingSpot}
           onOpenRoute={openRoute}
           onOpenTimer={() => setScreen("timer")}
@@ -976,6 +981,7 @@ export default function App() {
             isLocating={isLocating}
             isSavingSpot={isSavingSpot}
             onAddCustomMarker={addCustomMarker}
+            onDeleteCustomMarker={deleteCustomMarker}
             mapRegion={mapRegion}
             onChangeParkingDescription={setParkingDescription}
             onClearParkingSpot={clearParkingSpot}
