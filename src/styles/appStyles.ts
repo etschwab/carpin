@@ -354,7 +354,7 @@ export const styles = StyleSheet.create({
     position: "relative"
   },
   realMap: {
-    ...StyleSheet.absoluteFillObject
+    ...StyleSheet.absoluteFill
   },
   mapOverlayLabel: {
     backgroundColor: "rgba(17, 17, 29, 0.92)",
@@ -472,7 +472,7 @@ export const styles = StyleSheet.create({
     position: "relative"
   },
   sheetContentLayer: {
-    ...StyleSheet.absoluteFillObject
+    ...StyleSheet.absoluteFill
   },
   fullHeaderCard: {
     alignItems: "center",

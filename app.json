@@ -4,14 +4,9 @@
     "slug": "carpin",
     "version": "0.1.0",
     "orientation": "default",
-    "icon": "./carpin.png",
+    "icon": "./assets/carpin.png",
     "scheme": "carpin",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./carpin.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#f7f2ea"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "ch.ictlearnfactory.carpin",
@@ -25,7 +20,18 @@
     "plugins": [
       "expo-location",
       "expo-image-picker",
-      "expo-notifications"
+      "expo-notifications",
+      "expo-status-bar",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/carpin.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#f7f2ea",
+          "imageWidth": 200
+        }
+      ]
     ]
   }
 }

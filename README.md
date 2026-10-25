@@ -21,6 +21,22 @@ Danach den QR-Code mit Expo Go auf dem iPhone scannen. Alternativ kann auf einem
 - Fahrzeugliste mit lokal gespeicherten Fahrzeugen
 - Lokale Persistenz ueber AsyncStorage
 
+## Ordnerstruktur
+
+```text
+App.tsx                 Einstiegspunkt fuer Expo, leitet auf src/App.tsx weiter
+assets/                 Logo / Icon / Splash
+src/
+  App.tsx               Layout (Handy oder Querformat) und Navigation
+  components/           wiederverwendbare UI-Bausteine (Karte, Header, PhotoModal, ...)
+    navigation/         Tabs (Handy) und Sidebar (Querformat)
+  screens/              ganze Bildschirme (Dashboard, Timer, Fahrzeuge, History, Impressum)
+  hooks/                App-Logik und State (Parkplatz, Timer, Fahrzeuge, Standort, Bottom Sheet)
+  services/             Zugriff auf Geraete-APIs (AsyncStorage, Mitteilungen, Kamera, Karten, Teilen)
+  constants/  styles/  types/  utils/
+__tests__/              Jest-Tests
+```
+
 ## Entwicklung
 
 Eine uebersichtliche Zusammenfassung der Feature-Branches und Commits steht in [`docs/commit-overview.md`](docs/commit-overview.md).

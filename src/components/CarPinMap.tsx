@@ -253,7 +253,7 @@ export function CarPinMap({
         rotateEnabled={isHeadingFollowEnabled}
         showsCompass={false}
         showsMyLocationButton={false}
-        showsPointsOfInterest={false}
+        showsPointsOfInterests={false}
       >
         {/* Eigener Standort */}
         {currentLocation && (

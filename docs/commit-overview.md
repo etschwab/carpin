@@ -11,7 +11,7 @@ Ziel dieses Schrittes war eine startbare React-Native-App fuer iPhone.
 
 - Expo/React Native mit TypeScript eingerichtet
 - `app.json`, `tsconfig.json`, `babel.config.js` und `package.json` angelegt
-- Logo `carpin.png` eingebunden
+- Logo `assets/carpin.png` eingebunden
 - App mit `npm run start` in Expo Go startbar gemacht
 
 **Code zeigen:** `package.json`, `app.json`, `App.tsx`

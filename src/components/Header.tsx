@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Image, Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import { styles } from "../styles/appStyles";
 // Impressum Popup
-import ImpressumScreen from "./ImpressumScreen";
+import ImpressumScreen from "../screens/ImpressumScreen";
 
 type HeaderProps = {
   title: string;
@@ -17,7 +17,7 @@ export function Header({ title }: HeaderProps) {
       <View style={[styles.brandRow, customStyles.headerLayout]}>
         {/* Logo Titel */}
         <View style={customStyles.leftContainer}>
-          <Image source={require("../../carpin.png")} style={styles.logo} resizeMode="contain" />
+          <Image source={require("../../assets/carpin.png")} style={styles.logo} resizeMode="contain" />
           <Text style={styles.headerTitle}>{title}</Text>
         </View>
 
