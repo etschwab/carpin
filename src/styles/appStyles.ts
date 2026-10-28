@@ -168,10 +168,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: -16
   },
-  wideMapScreen: {
-    flex: 1,
-    position: "relative"
-  },
   wideDashboard: {
     backgroundColor: "#10101b",
     flex: 1,
@@ -294,57 +290,6 @@ export const styles = StyleSheet.create({
     borderColor: "#6f2b3c"
   },
   widePanelDangerText: {
-    color: "#ff8a9a"
-  },
-  wideMapPrimaryButton: {
-    alignItems: "center",
-    backgroundColor: "#20c8f4",
-    borderRadius: 18,
-    bottom: 18,
-    flexDirection: "row",
-    gap: 9,
-    paddingHorizontal: 22,
-    paddingVertical: 14,
-    position: "absolute",
-    right: 18,
-    zIndex: 20,
-    elevation: 20
-  },
-  wideMapPrimaryButtonText: {
-    color: "#071018",
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  wideMapActionTray: {
-    alignItems: "center",
-    bottom: 84,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 7,
-    left: 18,
-    maxWidth: 310,
-    position: "absolute",
-    zIndex: 20,
-    elevation: 20
-  },
-  wideMapActionButton: {
-    backgroundColor: "rgba(17, 17, 29, 0.92)",
-    borderColor: "#242439",
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  wideMapActionButtonText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  wideMapDangerButton: {
-    backgroundColor: "rgba(43, 27, 35, 0.94)",
-    borderColor: "#6f2b3c"
-  },
-  wideMapDangerButtonText: {
     color: "#ff8a9a"
   },
   mapCard: {
